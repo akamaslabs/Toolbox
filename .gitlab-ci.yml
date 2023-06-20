@@ -3,6 +3,7 @@ stages:
 
 build-and-push:
   stage: build-push-image
+  image: registry.gitlab.com/akamas/devops/build-base/build-base:1.7.0
   tags:
     - aws
   script:
