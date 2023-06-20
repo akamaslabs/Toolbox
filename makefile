@@ -29,8 +29,14 @@ login-ecr: 									## Login to ECR Docker Registry
 	echo "Logging in to AWS ECR" && \
 	eval $(shell aws ecr get-login --no-include-email --region $(AWS_DEFAULT_REGION))
 
+.PHONY: check-target
+check-target:
+ifeq ($(strip $(target)),)
+	$(error target is undefined)
+endif
+
 .PHONY: ci
-ci:	check-target 			## Run target inside Docker. E.g.: make ci target=verify
+ci:	check-target 			## Run target inside Docker. E.g.: make ci target=build
 	docker run --pull always --rm \
 	-v $(repo_location):/workdir -w /workdir \
 	-v $(AKAMAS_SSH_KEY):$(AKAMAS_SSH_KEY):ro \
