@@ -39,9 +39,7 @@ endif
 ci:	check-target 			## Run target inside Docker. E.g.: make ci target=build
 	docker run --pull always --rm \
 	-v $(repo_location):/workdir -w /workdir \
-	-v $(AKAMAS_SSH_KEY):$(AKAMAS_SSH_KEY):ro \
 	-v /var/run/docker.sock:/var/run/docker.sock \
-	-v $(AKAMAS_LICENSE):$(AKAMAS_LICENSE) \
 	--network host \
 	--env CI_COMMIT_REF_NAME=$(CI_COMMIT_REF_NAME) \
 	--env ENV_NAME=$(ENV_NAME) \
@@ -56,7 +54,7 @@ ci:	check-target 			## Run target inside Docker. E.g.: make ci target=build
 	--env BUILD_USER_ID=$(BUILD_USER_ID) \
 	--env BUILD_USER_ID=$(BUILD_USER_ID) \
 	--env DOCKER_GROUP_ID=$(DOCKER_GROUP_ID) \
-	registry.gitlab.com/akamas/devops/build-base/build-base:1.7.0 "make $(target)"
+	registry.gitlab.com/akamas/devops/build-base/build-base:1.8.1 /bin/sh -c "make $(target)"
 
 .PHONY: push
 push:   login-ecr		## Push docker image
@@ -71,4 +69,4 @@ build: 			## Build docker image
 info:    					## Print some info on the repo
 	@echo "this_version: $(version)" && \
 	echo "this_branch: $(branch)" && \
-	echo "repo_location: $(repo_location)" &&\
+	echo "repo_location: $(repo_location)"
