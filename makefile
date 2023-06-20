@@ -15,6 +15,9 @@ DOCKER_REGISTRY_USER ?= gitlab-ci-token
 current_tag=$(shell git tag --points-at HEAD)
 
 VERSION ?= $(version)
+AKAMAS_REGISTRY := 485790562880.dkr.ecr.us-east-2.amazonaws.com
+IMAGE_NAME := ${AKAMAS_REGISTRY}/akamas/management-container
+
 AWS_DEFAULT_REGION ?= us-east-2
 
 .PHONY: help
