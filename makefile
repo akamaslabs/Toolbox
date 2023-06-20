@@ -29,6 +29,29 @@ login-ecr: 									## Login to ECR Docker Registry
 	echo "Logging in to AWS ECR" && \
 	eval $(shell aws ecr get-login --no-include-email --region $(AWS_DEFAULT_REGION))
 
+.PHONY: ci
+ci:	check-target 			## Run target inside Docker. E.g.: make ci target=verify
+	docker run --pull always --rm \
+	-v $(repo_location):/workdir -w /workdir \
+	-v $(AKAMAS_SSH_KEY):$(AKAMAS_SSH_KEY):ro \
+	-v /var/run/docker.sock:/var/run/docker.sock \
+	-v $(AKAMAS_LICENSE):$(AKAMAS_LICENSE) \
+	--network host \
+	--env CI_COMMIT_REF_NAME=$(CI_COMMIT_REF_NAME) \
+	--env ENV_NAME=$(ENV_NAME) \
+	--env ENV_DOMAIN=$(ENV_DOMAIN) \
+	--env ENV=$(ENV) \
+	--env AWS_ACCESS_KEY_ID=$(AWS_ACCESS_KEY_ID) \
+	--env AWS_SECRET_ACCESS_KEY=$(AWS_SECRET_ACCESS_KEY) \
+	--env AWS_DEFAULT_REGION=$(AWS_DEFAULT_REGION) \
+	--env CI_JOB_TOKEN=${CI_JOB_TOKEN} \
+	--env AKAMAS_SSH_KEY=$(AKAMAS_SSH_KEY) \
+	--env CI_PIPELINE_ID=$(CI_PIPELINE_ID) \
+	--env BUILD_USER_ID=$(BUILD_USER_ID) \
+	--env BUILD_USER_ID=$(BUILD_USER_ID) \
+	--env DOCKER_GROUP_ID=$(DOCKER_GROUP_ID) \
+	registry.gitlab.com/akamas/devops/build-base/build-base:1.7.0 "make $(target)"
+
 .PHONY: push
 push:   login-ecr		## Push docker image
 	docker push $(IMAGE_NAME):$(VERSION)
