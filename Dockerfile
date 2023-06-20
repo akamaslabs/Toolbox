@@ -77,3 +77,5 @@ RUN curl -O https://s3.us-east-2.amazonaws.com/akamas/cli/$(curl https://s3.us-e
     echo '. ~/.akamas/akamas_autocomplete.sh' >> ~/.bashrc
 
 USER ${BUILD_USER}
+
+CMD ["/bin/bash"]
