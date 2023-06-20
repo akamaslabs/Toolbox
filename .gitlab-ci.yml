@@ -4,6 +4,6 @@ stages:
 build-and-push:
   stage: build-push-image
   tags:
-    - Bash
+    - aws
   script:
     - make build && make push
