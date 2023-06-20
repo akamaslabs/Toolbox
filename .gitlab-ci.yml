@@ -5,6 +5,8 @@ build-and-push:
   stage: build-push-image
   tags:
     - Bash
+  before_script:
+     - docker login -u $GITLAB_COM_REGISTRY_USER -p $GITLAB_COM_REGISTRY_TOKEN registry.gitlab.com
   script:
     - make ci target=build
     - make ci target=push
