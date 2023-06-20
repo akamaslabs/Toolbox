@@ -10,24 +10,30 @@ branch := $(shell git rev-parse --abbrev-ref HEAD)
 version := $(shell cat version)
 repo_location := $(strip $(shell  git rev-parse --show-toplevel))
 
-#docker registry user
 DOCKER_REGISTRY_USER ?= gitlab-ci-token
 
 current_tag=$(shell git tag --points-at HEAD)
 
 VERSION ?= $(version)
+AWS_DEFAULT_REGION ?= us-east-2
 
 .PHONY: help
 help: 							## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":|: .*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
-.PHONY: build
-build: 			## Build container image
-	@docker build --pull --build-arg BUILD_USER_ID=$(BUILD_USER_ID) --build-arg BUILD_USER=$(BUILD_USER) --build-arg DOCKER_GROUP_ID=$(DOCKER_GROUP_ID) .
+.PHONY: login-ecr
+login-ecr: 									## Login to ECR Docker Registry
+	echo "Logging in to AWS ECR" && \
+	eval $(shell aws ecr get-login --no-include-email --region $(AWS_DEFAULT_REGION))
 
 .PHONY: push
-push:						## Push to ECR
-	@docker push
+push:   login-ecr		## Push docker image
+	docker push $(IMAGE_NAME):$(VERSION)
+
+.PHONY: build
+build: 			## Build docker image
+	@echo "Building docker image" && \
+	@docker build --pull -t ${IMAGE_NAME}:${VERSION} --build-arg BUILD_USER_ID=$(BUILD_USER_ID) --build-arg BUILD_USER=$(BUILD_USER) --build-arg DOCKER_GROUP_ID=$(DOCKER_GROUP_ID) .
 
 .PHONY: info
 info:    					## Print some info on the repo

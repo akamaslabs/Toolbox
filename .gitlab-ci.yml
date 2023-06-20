@@ -1,0 +1,9 @@
+stages:
+  - build-push-image
+
+build-and-push:
+  stage: build-push-image
+  tags:
+    - Bash
+  script:
+    - make build && make push
