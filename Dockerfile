@@ -78,4 +78,5 @@ RUN curl -O https://s3.us-east-2.amazonaws.com/akamas/cli/$(curl https://s3.us-e
 
 USER ${BUILD_USER}
 
+ENTRYPOINT ["tail", "-f", "/dev/null"]
 CMD ["/bin/bash"]
