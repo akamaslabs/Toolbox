@@ -1,5 +1,9 @@
 FROM ubuntu:20.04
 
+ARG BUILD_USER_ID=100
+ENV BUILD_USER=builder
+ARG DOCKER_GROUP_ID=200
+
 RUN  apt-get update &&\
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     apt-transport-https \
@@ -39,6 +43,9 @@ RUN apt-get update &&\
     docker-compose-plugin && \
     apt-get autoremove -y && apt-get clean -y
 
+RUN groupdel docker && groupadd -g ${DOCKER_GROUP_ID} docker
+RUN useradd --user-group --create-home -o --shell /bin/false -u ${BUILD_USER_ID} -G docker ${BUILD_USER}
+
 RUN locale-gen en_US.UTF-8
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
@@ -52,12 +59,6 @@ RUN echo "export PATH=/opt/jdk-11.0.10_9/bin:$PATH" >> .bashrc
 RUN pip3 install --upgrade pip
 
 RUN pip3 install setuptools awscli boto boto3 botocore wheel
-
-ARG BUILD_USER_ID=100
-ARG BUILD_USER=root
-ARG DOCKER_GROUP_ID=200
-RUN groupdel docker && groupadd -g ${DOCKER_GROUP_ID} docker
-RUN useradd --user-group --create-home --shell /bin/false -u ${BUILD_USER_ID} -G docker ${BUILD_USER}
 
 RUN wget https://github.com/mikefarah/yq/releases/download/v4.33.3/yq_linux_amd64 &&\
     mv yq_linux_amd64 /usr/bin/yq &&\
