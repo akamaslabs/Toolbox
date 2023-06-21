@@ -26,7 +26,8 @@ RUN  apt-get update &&\
     zip \
     unzip \
     sudo \
-    ping \
+    iputils-ping \
+    net-tools \
     wget && \
     apt-get autoremove -y && apt-get clean -y
 
