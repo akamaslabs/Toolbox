@@ -28,6 +28,7 @@ RUN  apt-get update &&\
     sudo \
     iputils-ping \
     net-tools \
+    dnsutils \
     wget && \
     apt-get autoremove -y && apt-get clean -y
 
