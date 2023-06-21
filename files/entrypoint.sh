@@ -1,19 +1,11 @@
-#!/bin/sh
+#!/bin/bash
 
-if [ ! -f "/etc/ssh/ssh_host_rsa_key" ]; then
-	# generate fresh rsa key
-	ssh-keygen -f /etc/ssh/ssh_host_rsa_key -N '' -t rsa
-fi
-if [ ! -f "/etc/ssh/ssh_host_dsa_key" ]; then
-	# generate fresh dsa key
-	ssh-keygen -f /etc/ssh/ssh_host_dsa_key -N '' -t dsa
-fi
-
-#prepare run dir
-if [ ! -d "/var/run/sshd" ]; then
-  mkdir -p /var/run/sshd
-fi
-
-/usr/sbin/sshd -D -E /var/log/sshd.log
+echo "Container started" 1>&2
 echo started > /tmp/healtcheck
-tail -f /dev/null
+if [ -e /tmp/akamas_password ]; then
+	akamas_password=$(cat /tmp/akamas_password)
+	echo "Password for user akamas is: $akamas_password" 1>&2
+	rm -f /tmp/akamas_password
+fi
+
+echo $akamas_password | sudo -S /usr/sbin/sshd -D -E /var/log/sshd.log

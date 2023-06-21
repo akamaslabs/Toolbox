@@ -50,7 +50,7 @@ RUN apt-get update &&\
 
 RUN groupdel docker && groupadd -g ${DOCKER_GROUP_ID} docker
 RUN useradd --user-group --create-home --shell /bin/bash -u ${BUILD_USER_ID} -G sudo,docker ${BUILD_USER} && newgrp docker
-RUN echo "${BUILD_USER}:${BUILD_USER}" | chpasswd
+RUN build_password=$(openssl rand -hex 8) && echo $build_password > /tmp/akamas_password && chown ${BUILD_USER}:${BUILD_USER} /tmp/akamas_password && echo "${BUILD_USER}:${build_password}" | chpasswd
 
 
 RUN locale-gen en_US.UTF-8
@@ -91,8 +91,12 @@ RUN curl -O https://s3.us-east-2.amazonaws.com/akamas/cli/$(curl https://s3.us-e
     mv akamas_autocomplete.sh /home/${BUILD_USER}/.akamas && \
     echo ". /home/${BUILD_USER}/.akamas/akamas_autocomplete.sh" >> /home/${BUILD_USER}/.bashrc
 
+RUN if [ ! -f "/etc/ssh/ssh_host_rsa_key" ]; then ssh-keygen -f /etc/ssh/ssh_host_rsa_key -N '' -t rsa; fi
+RUN ssh-keygen -f /etc/ssh/ssh_host_dsa_key -N '' -t dsa
+RUN mkdir -p /var/run/sshd
+
 USER ${BUILD_USER}
 WORKDIR /home/${BUILD_USER}
 
-ENTRYPOINT [ "/entrypoint.sh"]
+ENTRYPOINT ["/entrypoint.sh"]
 SHELL ["/bin/bash", "-l", "-c"]
