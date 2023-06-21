@@ -15,4 +15,5 @@ if [ ! -d "/var/run/sshd" ]; then
 fi
 
 /usr/sbin/sshd -D -E /var/log/sshd.log
+echo started > /tmp/healtcheck
 tail -f /dev/null

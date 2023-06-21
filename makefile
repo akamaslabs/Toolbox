@@ -2,8 +2,8 @@
 SHELL := /bin/bash
 
 # Build environment variables used in the docker image building process
-BUILD_USER=$(shell whoami)
-BUILD_USER_ID=$(shell id -u $(whoami))
+BUILD_USER=akamas
+BUILD_USER_ID=199
 DOCKER_GROUP_ID ?= $(shell getent group | grep docker | cut -d: -f3)
 
 branch := $(shell git rev-parse --abbrev-ref HEAD)
