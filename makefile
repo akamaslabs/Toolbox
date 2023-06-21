@@ -2,8 +2,6 @@
 SHELL := /bin/bash
 
 # Build environment variables used in the docker image building process
-BUILD_USER=akamas
-BUILD_USER_ID=199
 DOCKER_GROUP_ID ?= $(shell getent group | grep docker | cut -d: -f3)
 
 branch := $(shell git rev-parse --abbrev-ref HEAD)
@@ -44,8 +42,6 @@ ci:	check-target 			## Run target inside Docker. E.g.: make ci target=build
 	--env AWS_ACCESS_KEY_ID=$(AWS_ACCESS_KEY_ID) \
 	--env AWS_SECRET_ACCESS_KEY=$(AWS_SECRET_ACCESS_KEY) \
 	--env AWS_DEFAULT_REGION=$(AWS_DEFAULT_REGION) \
-	--env BUILD_USER=$(BUILD_USER) \
-	--env BUILD_USER_ID=$(BUILD_USER_ID) \
 	--env DOCKER_GROUP_ID=$(DOCKER_GROUP_ID) \
 	registry.gitlab.com/akamas/devops/build-base/build-base:1.8.1 /bin/sh -c "make $(target)"
 
@@ -57,13 +53,11 @@ push:   login-ecr		## Push docker image
 build: 			## Build docker image
 	@echo "Building docker image" && \
 	env && \
-	docker build --pull -t ${IMAGE_NAME}:${VERSION} --build-arg BUILD_USER_ID=$(BUILD_USER_ID) --build-arg BUILD_USER=$(BUILD_USER) --build-arg DOCKER_GROUP_ID=$(DOCKER_GROUP_ID) .
+	docker build --pull -t ${IMAGE_NAME}:${VERSION} --build-arg DOCKER_GROUP_ID=$(DOCKER_GROUP_ID) .
 
 .PHONY: info
 info:    					## Print some info on the repo
 	@echo "this_version: $(version)" && \
 	echo "this_branch: $(branch)" && \
 	echo "repo_location: $(repo_location)" && \
-	echo "BUILD_USER: $(BUILD_USER)" && \
-	echo "BUILD_USER_ID: $(BUILD_USER_ID)" && \
 	echo "DOCKER_GROUP_ID: $(DOCKER_GROUP_ID)"
