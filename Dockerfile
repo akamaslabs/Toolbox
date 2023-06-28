@@ -21,6 +21,7 @@ RUN  apt-get update &&\
     libxml2-utils \
     openssh-client \
     openssh-server \
+    sshpass \
     locales \
     vim \
     zip \
@@ -78,10 +79,9 @@ RUN curl -o akamas_cli -O https://s3.us-east-2.amazonaws.com/akamas/cli/$(curl h
     chmod 755 /usr/local/bin/akamas
 
 ADD files/entrypoint.sh /
-ADD files/id_rsa.pub /home/${BUILD_USER}/.ssh/authorized_keys
-
 RUN chmod +x /entrypoint.sh
-RUN mkdir -p /home/${BUILD_USER}/.ssh
+RUN mkdir -p /home/${BUILD_USER}/.ssh && chown ${BUILD_USER}:${BUILD_USER} /home/${BUILD_USER}/.ssh
+ADD --chown=${BUILD_USER}:${BUILD_USER} files/id_rsa.pub /home/${BUILD_USER}/.ssh/authorized_keys
 RUN chmod 600 /home/${BUILD_USER}/.ssh/authorized_keys
 
 RUN echo "export PATH=/opt/java/bin:$PATH" >> /home/${BUILD_USER}/.bashrc
@@ -89,7 +89,11 @@ RUN echo "export PATH=/opt/java/bin:$PATH" >> /home/${BUILD_USER}/.bashrc
 RUN curl -O https://s3.us-east-2.amazonaws.com/akamas/cli/$(curl https://s3.us-east-2.amazonaws.com/akamas/cli/stable.txt)/linux_64/akamas_autocomplete.sh && \
     mkdir -p /home/${BUILD_USER}/.akamas && \
     mv akamas_autocomplete.sh /home/${BUILD_USER}/.akamas && \
+    chmod 755 /home/${BUILD_USER}/.akamas/akamas_autocomplete.sh && \
+    chown ${BUILD_USER}:${BUILD_USER} /home/${BUILD_USER}/.akamas/akamas_autocomplete.sh && \
     echo ". /home/${BUILD_USER}/.akamas/akamas_autocomplete.sh" >> /home/${BUILD_USER}/.bashrc
+
+ADD --chown=${BUILD_USER}:${BUILD_USER} files/akamasconf /home/${BUILD_USER}/.akamas/
 
 RUN if [ ! -f "/etc/ssh/ssh_host_rsa_key" ]; then ssh-keygen -f /etc/ssh/ssh_host_rsa_key -N '' -t rsa; fi
 RUN ssh-keygen -f /etc/ssh/ssh_host_dsa_key -N '' -t dsa
