@@ -13,6 +13,11 @@ build-and-push:
     - make ci target=push
 
 e2e-docker-compose:
+  only:
+    - develop
+    - master
+    - /^.*e2e.*$/i
+    - merge_requests
   stage: e2e
   tags:
     - Bash
