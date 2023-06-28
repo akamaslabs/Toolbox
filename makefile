@@ -20,7 +20,7 @@ AWS_DEFAULT_REGION ?= us-east-2
 
 .PHONY: help
 help: 							## Show this help
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":|: .*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
+	@grep -E '^[a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":|: .*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
 .PHONY: login-ecr
 login-ecr: 									## Login to ECR Docker Registry
@@ -54,6 +54,20 @@ build: 			## Build docker image
 	@echo "Building docker image" && \
 	env && \
 	docker build --pull -t ${IMAGE_NAME}:${VERSION} --build-arg DOCKER_GROUP_ID=$(DOCKER_GROUP_ID) .
+
+.PHONY: build-docker-compose-yml
+build-docker-compose-yml:    					## Build e2e/docker-compose.yml
+	@export CURR_VERSION=${VERSION} && cat e2e/docker-compose.yml.template | envsubst >e2e/docker-compose.yml
+
+.PHONY: e2e-test-docker
+e2e-test-docker: build-docker-compose-yml					## Test e2e with docker-compose
+	cd e2e && \
+	docker-compose up -d && \
+	sleep 10 && \
+	curr_password=$(shell docker-compose logs management-container | grep Password | cut -d ':' -f 2 | sed 's/ //') && \
+	echo $(curr_password) && \
+	docker-compose down && \
+	cd -
 
 .PHONY: info
 info:    					## Print some info on the repo

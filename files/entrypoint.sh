@@ -1,7 +1,7 @@
 #!/bin/bash
 
 echo "Container started" 1>&2
-echo started > /tmp/healtcheck
+echo started > /tmp/healthcheck
 if [ -e /tmp/akamas_password ]; then
 	akamas_password=$(cat /tmp/akamas_password)
 	echo "Password for user akamas is: $akamas_password" 1>&2
