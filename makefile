@@ -22,10 +22,15 @@ AWS_DEFAULT_REGION ?= us-east-2
 help: 							## Show this help
 	@grep -E '^[a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":|: .*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
-.PHONY: login-ecr
-login-ecr: 									## Login to ECR Docker Registry
-	echo "Logging in to AWS ECR" && \
-	eval $(shell aws ecr get-login --no-include-email --region $(AWS_DEFAULT_REGION))
+PHONY: login-ecr
+cli_v2 := $(shell aws --version | grep aws-cli/2)
+login-ecr: 					## Login to ECR Docker Registry
+	@echo "Logging in to AWS ECR"
+ifdef cli_v2
+	@aws ecr get-login-password --region us-east-2 | docker login -u AWS --password-stdin https://485790562880.dkr.ecr.us-east-2.amazonaws.com
+else
+	@eval $(shell aws ecr get-login --no-include-email --region us-east-2)
+endif
 
 .PHONY: check-target
 check-target:
