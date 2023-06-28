@@ -83,6 +83,7 @@ RUN chmod +x /entrypoint.sh
 RUN mkdir -p /home/${BUILD_USER}/.ssh && chown ${BUILD_USER}:${BUILD_USER} /home/${BUILD_USER}/.ssh
 ADD --chown=${BUILD_USER}:${BUILD_USER} files/id_rsa.pub /home/${BUILD_USER}/.ssh/authorized_keys
 RUN chmod 600 /home/${BUILD_USER}/.ssh/authorized_keys
+RUN mkdir -p /work && chown -R ${BUILD_USER}:${BUILD_USER} /work
 
 RUN echo "export PATH=/opt/java/bin:$PATH" >> /home/${BUILD_USER}/.bashrc
 
