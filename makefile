@@ -61,13 +61,7 @@ build-docker-compose-yml:    					## Build e2e/docker-compose.yml
 
 .PHONY: e2e-test-docker
 e2e-test-docker: build-docker-compose-yml					## Test e2e with docker-compose
-	cd e2e && \
-	docker-compose up -d && \
-	sleep 10 && \
-	curr_password=$(shell docker-compose logs management-container | grep Password | cut -d ':' -f 2 | sed 's/ //') && \
-	echo $(curr_password) && \
-	docker-compose down && \
-	cd -
+	cd e2e && bash -x test-docker-compose.sh && cd -
 
 .PHONY: info
 info:    					## Print some info on the repo
