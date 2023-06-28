@@ -60,7 +60,7 @@ build-docker-compose-yml:    					## Build e2e/docker-compose.yml
 	@export CURR_VERSION=${VERSION} && cat e2e/docker-compose.yml.template | envsubst >e2e/docker-compose.yml
 
 .PHONY: e2e-test-docker
-e2e-test-docker: build-docker-compose-yml					## Test e2e with docker-compose
+e2e-test-docker: build-docker-compose-yml login-ecr					## Test e2e with docker-compose
 	cd e2e && bash -x test-docker-compose.sh && cd -
 
 .PHONY: info
