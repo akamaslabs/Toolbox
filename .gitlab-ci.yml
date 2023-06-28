@@ -1,5 +1,6 @@
 stages:
   - build-push-image
+  - e2e
 
 build-and-push:
   stage: build-push-image
@@ -10,3 +11,12 @@ build-and-push:
   script:
     - make ci target=build
     - make ci target=push
+
+e2e-docker-compose:
+  stage: e2e
+  tags:
+    - Bash
+  before_script:
+     - docker login -u $GITLAB_COM_REGISTRY_USER -p $GITLAB_COM_REGISTRY_TOKEN registry.gitlab.com
+  script:
+    - make e2e-test-docker

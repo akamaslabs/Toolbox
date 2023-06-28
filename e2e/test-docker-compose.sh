@@ -1,7 +1,8 @@
 #!/bin/bash
 
+docker-compose pull
 docker-compose up -d
-sleep 2
+sleep 10
 curr_password=$(docker-compose logs management-container | grep Password | cut -d ':' -f 2 | sed 's/ //')
 container_id=$(docker ps | grep management-container | cut -d ' ' -f 1)
 docker cp test-remote-ssh.sh ${container_id}:/tmp/
@@ -12,4 +13,4 @@ else
 	echo "Test FAILED"
 	exit 1
 fi
-#docker-compose down
+docker-compose down
