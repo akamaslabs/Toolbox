@@ -1,0 +1,3 @@
+[submodule "deploy"]
+	path = deploy
+	url = https://intapps.moviri.com/gitlab/akamas/devops/ansible-scripts.git
