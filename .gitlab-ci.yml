@@ -74,7 +74,7 @@ e2e-kube:
     KUBE_E2E: "true"
   dependencies:
     - e2e-deploy-kube
-  image: dtzar/helm-kubectl
+  image: 485790562880.dkr.ecr.us-east-2.amazonaws.com/akamas/management-container:1.0.0-dev
   script:
     - "make endtoend-test-kube"
   except:
