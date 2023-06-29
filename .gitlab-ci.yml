@@ -54,12 +54,13 @@ e2e-deploy-kube:
     expire_in: 240 minutes
 
 e2e-kube:
-  extends: .simple_job
   only:
     - develop
     - master
     - /^.*e2e.*$/i
     - merge_requests
+  tags:
+    - aws
   stage: e2e
   variables:
     KUBE_E2E: "true"
