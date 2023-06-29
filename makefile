@@ -18,19 +18,7 @@ IMAGE_NAME := ${AKAMAS_REGISTRY}/akamas/management-container
 
 AWS_DEFAULT_REGION ?= us-east-2
 
-.PHONY: help
-help: 							## Show this help
-	@grep -E '^[a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":|: .*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
-
-PHONY: login-ecr
-cli_v2 := $(shell aws --version | grep aws-cli/2)
-login-ecr: 					## Login to ECR Docker Registry
-	@echo "Logging in to AWS ECR"
-ifdef cli_v2
-	@aws ecr get-login-password --region us-east-2 | docker login -u AWS --password-stdin https://485790562880.dkr.ecr.us-east-2.amazonaws.com
-else
-	@eval $(shell aws ecr get-login --no-include-email --region us-east-2)
-endif
+include deploy/makefile
 
 .PHONY: check-target
 check-target:
@@ -64,9 +52,13 @@ build: 			## Build docker image
 build-docker-compose-yml:    					## Build e2e/docker-compose.yml
 	@export CURR_VERSION=${VERSION} && cat e2e/docker-compose.yml.template | envsubst >e2e/docker-compose.yml
 
-.PHONY: e2e-test-docker
-e2e-test-docker: build-docker-compose-yml login-ecr					## Test e2e with docker-compose
+.PHONY: endtoend-test-docker
+endtoend-test-docker: build-docker-compose-yml login-ecr					## Test e2e with docker-compose
 	cd e2e && bash -x test-docker-compose.sh && cd -
+
+.PHONY: endtoend-test-kube
+endtoend-test-kube: render-key cli-version		##  End 2 End test with branin function (e.g. CLI_VERSION=2.6.0  ENV_NAME=management make e2e )
+	cd e2e && bash -x test-kubernetes.sh && cd -
 
 .PHONY: info
 info:    					## Print some info on the repo

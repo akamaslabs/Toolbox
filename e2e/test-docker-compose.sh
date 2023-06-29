@@ -10,8 +10,8 @@ docker exec $container_id /tmp/test-remote-ssh.sh "$curr_password"
 res=$?
 docker-compose down
 if [ $res -eq 0 ]; then
-	echo "Test PASSED"
+	echo "Docker-compose Test PASSED"
 else
-	echo "Test FAILED"
+	echo "Docker-compose Test FAILED"
 	exit 1
 fi

@@ -1,6 +1,7 @@
 stages:
   - build-push-image
   - e2e
+  - e2e-cleanup
 
 build-and-push:
   stage: build-push-image
@@ -24,4 +25,86 @@ e2e-docker-compose:
   before_script:
      - docker login -u $GITLAB_COM_REGISTRY_USER -p $GITLAB_COM_REGISTRY_TOKEN registry.gitlab.com
   script:
-    - make e2e-test-docker
+    - make endtoend-test-docker
+
+e2e-deploy-kube:
+  only:
+    - develop
+    - master
+    - /^.*e2e.*$/i
+    - merge_requests
+  tags:
+    - Bash
+  stage: e2e
+  variables:
+    KUBE_CLUSTER: "management"
+  script:
+    - echo "Deploying akamas to cluster $KUBE_CLUSTER"
+    - "make provisioner target=debug"
+    - "make provisioner target=deploy-kube"
+  except:
+    variables:
+      - $CI_COMMIT_MESSAGE =~ /skip-e2e/
+      - $CI_COMMIT_MESSAGE =~ /.*only-e2e-docker.*/
+  artifacts:
+    exclude:
+      - "*.jar"
+    paths:
+      - deploy/playbooks/target
+    expire_in: 240 minutes
+
+e2e-kube:
+  extends: .simple_job
+  only:
+    - develop
+    - master
+    - /^.*e2e.*$/i
+    - merge_requests
+  stage: e2e
+  variables:
+    KUBE_E2E: "true"
+  dependencies:
+    - e2e-deploy-kube
+  image: registry.gitlab.com/akamas/devops/build-robot/build-robot:1.1.0
+  script:
+    - "make endtoend-test-kube"
+  except:
+    variables:
+      - $CI_COMMIT_MESSAGE =~ /skip-e2e/
+      - $CI_COMMIT_MESSAGE =~ /skip-convergence/
+      - $CI_COMMIT_MESSAGE =~ /.*only-e2e-docker.*/
+  needs:
+    - e2e-deploy-kube
+  artifacts:
+    exclude:
+      - "*.jar"
+    when: always
+    paths:
+      - e2e/results
+      - e2e/verifier/values
+    expire_in: 2 days
+
+# terminate-e2e-kube:
+#   only:
+#     - develop
+#     - master
+#     - /^.*e2e.*$/i
+#     - merge_requests
+#   tags:
+#     - Bash
+#   stage: e2e-cleanup
+#   variables:
+#     KUBE_CLUSTER: "management"
+#   dependencies:
+#     - e2e-kube
+#   except:
+#     variables:
+#       - $CI_COMMIT_MESSAGE =~ /skip-e2e/
+#       - $CI_COMMIT_MESSAGE =~ /keep-e2e/
+#       - $CI_COMMIT_MESSAGE =~ /.*only-e2e-docker.*/
+#   script:
+#     - 'echo "Terminating E2E environment"'
+#     - "make provisioner target=terminate-kube-environment"
+#   needs:
+#     - e2e-kube
+#     - e2e-deploy-kube
