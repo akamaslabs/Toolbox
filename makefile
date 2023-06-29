@@ -18,7 +18,10 @@ IMAGE_NAME := ${AKAMAS_REGISTRY}/akamas/management-container
 
 AWS_DEFAULT_REGION ?= us-east-2
 
-AKAMAS_CHART_E2E_FILE := deploy/playbooks/roles/akamas-kube/files/values-e2e.yaml.jinja2
+VALUES_FILE := roles/akamas-kube/files/values-e2e.yaml.jinja2
+
+AKAMAS_CHART_E2E_FILE := deploy/playbooks/${VALUES_FILE}
+
 
 include deploy/makefile
 
