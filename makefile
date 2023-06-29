@@ -18,6 +18,8 @@ IMAGE_NAME := ${AKAMAS_REGISTRY}/akamas/management-container
 
 AWS_DEFAULT_REGION ?= us-east-2
 
+AKAMAS_CHART_E2E_FILE := deploy/playbooks/roles/akamas-kube/files/values-e2e.yaml.jinja2
+
 include deploy/makefile
 
 .PHONY: check-target
@@ -52,12 +54,16 @@ build: 			## Build docker image
 build-docker-compose-yml:    					## Build e2e/docker-compose.yml
 	@export CURR_VERSION=${VERSION} && cat e2e/docker-compose.yml.template | envsubst >e2e/docker-compose.yml
 
+.PHONY: enable-management-pod
+enable-management-pod:    					## Build e2e/docker-compose.yml
+	@grep managementPod ${AKAMAS_CHART_E2E_FILE} || sed -i 's#extraDeploy:#managementPod:\n    enabled:true\n\nextraDeploy:#' ${AKAMAS_CHART_E2E_FILE}
+
 .PHONY: endtoend-test-docker
 endtoend-test-docker: build-docker-compose-yml login-ecr					## Test e2e with docker-compose
 	cd e2e && bash -x test-docker-compose.sh && cd -
 
 .PHONY: endtoend-test-kube
-endtoend-test-kube: render-key cli-version		##  End 2 End test with branin function (e.g. CLI_VERSION=2.6.0  ENV_NAME=management make e2e )
+endtoend-test-kube: render-key cli-version enable-management-pod		##  End 2 End test with branin function (e.g. CLI_VERSION=2.6.0  ENV_NAME=management make e2e )
 	cd e2e && bash -x test-kubernetes.sh && cd -
 
 .PHONY: info
