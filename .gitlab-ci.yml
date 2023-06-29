@@ -74,7 +74,7 @@ e2e-kube:
     KUBE_E2E: "true"
   dependencies:
     - e2e-deploy-kube
-  image: registry.gitlab.com/akamas/devops/build-robot/build-robot:1.1.0
+  image: dtzar/helm-kubectl
   script:
     - "make endtoend-test-kube"
   except:
