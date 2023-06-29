@@ -1,3 +1,7 @@
+variables:
+  GIT_SUBMODULE_STRATEGY: normal
+  GIT_DEPTH: 5
+
 stages:
   - build-push-image
   - e2e
