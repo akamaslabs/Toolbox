@@ -41,6 +41,7 @@ ci:	check-target 			## Run target inside Docker. E.g.: make ci target=build
 	--env AWS_SECRET_ACCESS_KEY=$(AWS_SECRET_ACCESS_KEY) \
 	--env AWS_DEFAULT_REGION=$(AWS_DEFAULT_REGION) \
 	--env DOCKER_GROUP_ID=$(DOCKER_GROUP_ID) \
+	--env SCOPED_ENV_NAME=$(SCOPED_ENV_NAME) \
 	registry.gitlab.com/akamas/devops/build-base/build-base:1.8.3 /bin/sh -c "make $(target)"
 
 .PHONY: push

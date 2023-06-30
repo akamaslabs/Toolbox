@@ -1,5 +1,7 @@
 #!/bin/bash
 
+aws eks --region 'us-east-2' update-kubeconfig --name "$KUBE_CLUSTER"
+kubectl config set-context --current --namespace=$SCOPED_ENV_NAME
 management_pod_name=$(kubectl get pods | grep management | head -1 | cut -d ' ' -f 1)
 curr_password=$(kubectl logs ${management_pod_name} | grep Password | cut -d ':' -f 2 | sed 's/ //')
 kubectl cp test-remote-ssh-kube.sh ${management_pod_name}:/tmp/
