@@ -49,6 +49,7 @@ e2e-deploy-kube:
   script:
     - echo "Deploying akamas to cluster $KUBE_CLUSTER"
     - make provisioner target=debug
+    - make provisioner target=provision-environment
     - make provisioner target=deploy-kube
   except:
     variables:
@@ -92,27 +93,28 @@ e2e-kube:
       - e2e/verifier/values
     expire_in: 2 days
 
-# terminate-e2e-kube:
-#   only:
-#     - develop
-#     - master
-#     - /^.*e2e.*$/i
-#     - merge_requests
-#   tags:
-#     - Bash
-#   stage: e2e-cleanup
-#   variables:
-#     KUBE_CLUSTER: "dev"
-#   dependencies:
-#     - e2e-kube
-#   except:
-#     variables:
-#       - $CI_COMMIT_MESSAGE =~ /skip-e2e/
-#       - $CI_COMMIT_MESSAGE =~ /keep-e2e/
-#       - $CI_COMMIT_MESSAGE =~ /.*only-e2e-docker.*/
-#   script:
-#     - echo "Terminating E2E environment"
-#     - make provisioner target=terminate-kube-environment
-#   needs:
-#     - e2e-kube
-#     - e2e-deploy-kube
+terminate-e2e-kube:
+  only:
+    - develop
+    - master
+    - /^.*e2e.*$/i
+    - merge_requests
+  tags:
+    - Bash
+  stage: e2e-cleanup
+  variables:
+    KUBE_CLUSTER: "dev"
+  dependencies:
+    - e2e-kube
+  except:
+    variables:
+      - $CI_COMMIT_MESSAGE =~ /skip-e2e/
+      - $CI_COMMIT_MESSAGE =~ /keep-e2e/
+      - $CI_COMMIT_MESSAGE =~ /.*only-e2e-docker.*/
+  script:
+    - echo "Terminating E2E environment"
+    - make provisioner target=terminate-kube-environment
+    - make provisioner target=terminate-environment
+  needs:
+    - e2e-kube
+    - e2e-deploy-kube
