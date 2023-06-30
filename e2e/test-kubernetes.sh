@@ -1,7 +1,6 @@
 #!/bin/bash
 
 sleep 10m
-
 management_pod_name=$(kubectl get pods | grep management | head -1 | cut -d ' ' -f 1)
 curr_password=$(kubectl logs ${management_pod_name} | grep Password | cut -d ':' -f 2 | sed 's/ //')
 kubectl cp test-remote-ssh-kube.sh ${management_pod_name}:/tmp/
