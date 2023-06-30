@@ -64,7 +64,7 @@ endtoend-test-docker: build-docker-compose-yml login-ecr					## Test e2e with do
 
 .PHONY: endtoend-test-kube
 endtoend-test-kube: 		##  Test e2e with kubernetes
-	cd e2e && bash -x test-kubernetes.sh && cd -
+	cd e2e && bash -x test-kubernetes.sh ${KUBE_CLUSTER} ${SCOPED_ENV_NAME} && cd -
 
 .PHONY: info
 info:    					## Print some info on the repo
