@@ -48,8 +48,8 @@ e2e-deploy-kube:
     - build-and-push
   script:
     - echo "Deploying akamas to cluster $KUBE_CLUSTER"
-    - "make provisioner target=debug"
-    - "make provisioner target=deploy-kube"
+    - make provisioner target=debug
+    - make provisioner target=deploy-kube
   except:
     variables:
       - $CI_COMMIT_MESSAGE =~ /skip-e2e/
@@ -68,17 +68,14 @@ e2e-kube:
     - /^.*e2e.*$/i
     - merge_requests
   tags:
-    - aws
+    - Bash
   stage: e2e
   variables:
     KUBE_E2E: "true"
   dependencies:
     - e2e-deploy-kube
-  image: registry.gitlab.com/akamas/devops/build-base/build-base:1.8.3
-#  before_script:
-#     - docker login -u $GITLAB_COM_REGISTRY_USER -p $GITLAB_COM_REGISTRY_TOKEN registry.gitlab.com
   script:
-    - "make endtoend-test-kube"
+    - make ci target=endtoend-test-kube
   except:
     variables:
       - $CI_COMMIT_MESSAGE =~ /skip-e2e/
@@ -114,8 +111,8 @@ e2e-kube:
 #       - $CI_COMMIT_MESSAGE =~ /keep-e2e/
 #       - $CI_COMMIT_MESSAGE =~ /.*only-e2e-docker.*/
 #   script:
-#     - 'echo "Terminating E2E environment"'
-#     - "make provisioner target=terminate-kube-environment"
+#     - echo "Terminating E2E environment"
+#     - make provisioner target=terminate-kube-environment
 #   needs:
 #     - e2e-kube
 #     - e2e-deploy-kube
