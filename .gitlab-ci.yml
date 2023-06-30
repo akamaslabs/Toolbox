@@ -68,15 +68,15 @@ e2e-kube:
     - /^.*e2e.*$/i
     - merge_requests
   tags:
-    - Bash
+    - aws
   stage: e2e
   variables:
     KUBE_E2E: "true"
   dependencies:
     - e2e-deploy-kube
   image: registry.gitlab.com/akamas/devops/build-base/build-base:1.8.3
-  before_script:
-     - docker login -u $GITLAB_COM_REGISTRY_USER -p $GITLAB_COM_REGISTRY_TOKEN registry.gitlab.com
+#  before_script:
+#     - docker login -u $GITLAB_COM_REGISTRY_USER -p $GITLAB_COM_REGISTRY_TOKEN registry.gitlab.com
   script:
     - "make endtoend-test-kube"
   except:

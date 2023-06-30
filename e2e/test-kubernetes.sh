@@ -6,7 +6,6 @@ curr_password=$(kubectl logs ${management_pod_name} | grep Password | cut -d ':'
 kubectl cp test-remote-ssh-kube.sh ${management_pod_name}:/tmp/
 kubectl exec ${management_pod_name} -- /bin/bash -c "/tmp/test-remote-ssh-kube.sh $curr_password ${management_pod_name}"
 res=$?
-docker-compose down
 if [ $res -eq 0 ]; then
 	echo "Kubernetes Test PASSED"
 else
