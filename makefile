@@ -66,7 +66,7 @@ endtoend-test-docker: build-docker-compose-yml login-ecr					## Test e2e with do
 	cd e2e && bash -x test-docker-compose.sh && cd -
 
 .PHONY: endtoend-test-kube
-endtoend-test-kube: render-key cli-version enable-management-pod		##  End 2 End test with branin function (e.g. CLI_VERSION=2.6.0  ENV_NAME=management make e2e )
+endtoend-test-kube: enable-management-pod		##  Test e2e with kubernetes
 	cd e2e && bash -x test-kubernetes.sh && cd -
 
 .PHONY: info
