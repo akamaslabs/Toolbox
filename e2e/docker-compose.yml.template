@@ -1,0 +1,20 @@
+version: "3.5"
+
+networks:
+  akamas:
+    name: akamas
+    driver: bridge
+
+services:
+  management-container:
+    image: 485790562880.dkr.ecr.us-east-2.amazonaws.com/akamas/management-container:${CURR_VERSION}
+    container_name: management-container
+    environment:
+      - BASH_ENV=/home/akamas/.bashrc
+    expose:
+      - 22
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - akamas
+    restart: unless-stopped

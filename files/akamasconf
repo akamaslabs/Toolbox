@@ -1,0 +1,4 @@
+apiAddress: http://localhost:8000
+organization: akamas
+verifySsl: true
+workspace: default

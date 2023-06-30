@@ -1,0 +1,4 @@
+[submodule "deploy"]
+	path = deploy
+	url = ../../devops/ansible-scripts.git
+	branch = develop
