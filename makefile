@@ -18,7 +18,7 @@ IMAGE_NAME := ${AKAMAS_REGISTRY}/akamas/management-container
 
 AWS_DEFAULT_REGION ?= us-east-2
 
-VALUES_FILE := roles/akamas-kube/files/values-e2e.yaml.jinja2
+VALUES_FILE := roles/akamas-kube/files/values-e2e-management.yaml.jinja2
 
 AKAMAS_CHART_E2E_FILE := deploy/playbooks/${VALUES_FILE}
 
@@ -57,16 +57,12 @@ build: 			## Build docker image
 build-docker-compose-yml:    					## Build e2e/docker-compose.yml
 	@export CURR_VERSION=${VERSION} && cat e2e/docker-compose.yml.template | envsubst >e2e/docker-compose.yml
 
-.PHONY: enable-management-pod
-enable-management-pod:    					## Build e2e/docker-compose.yml
-	@grep managementPod ${AKAMAS_CHART_E2E_FILE} || sed -i 's#extraDeploy:#managementPod:\n    enabled:true\n\nextraDeploy:#' ${AKAMAS_CHART_E2E_FILE}
-
 .PHONY: endtoend-test-docker
 endtoend-test-docker: build-docker-compose-yml login-ecr					## Test e2e with docker-compose
 	cd e2e && bash -x test-docker-compose.sh && cd -
 
 .PHONY: endtoend-test-kube
-endtoend-test-kube: enable-management-pod		##  Test e2e with kubernetes
+endtoend-test-kube: 		##  Test e2e with kubernetes
 	cd e2e && bash -x test-kubernetes.sh && cd -
 
 .PHONY: info

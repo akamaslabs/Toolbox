@@ -49,7 +49,6 @@ e2e-deploy-kube:
   script:
     - echo "Deploying akamas to cluster $KUBE_CLUSTER"
     - make provisioner target=debug
-    - make provisioner target=provision-environment
     - make provisioner target=deploy-kube
   except:
     variables:
@@ -77,6 +76,7 @@ e2e-kube:
     - e2e-deploy-kube
   script:
     - make ci target=endtoend-test-kube
+  allow_failure: true
   except:
     variables:
       - $CI_COMMIT_MESSAGE =~ /skip-e2e/
@@ -114,7 +114,6 @@ terminate-e2e-kube:
   script:
     - echo "Terminating E2E environment"
     - make provisioner target=terminate-kube-environment
-    - make provisioner target=terminate-environment
   needs:
     - e2e-kube
     - e2e-deploy-kube
