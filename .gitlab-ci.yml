@@ -74,7 +74,9 @@ e2e-kube:
     KUBE_E2E: "true"
   dependencies:
     - e2e-deploy-kube
-  image: 485790562880.dkr.ecr.us-east-2.amazonaws.com/akamas/management-container:1.0.0-dev
+  image: registry.gitlab.com/akamas/devops/build-base/build-base:1.8.1.1
+  before_script:
+     - docker login -u $GITLAB_COM_REGISTRY_USER -p $GITLAB_COM_REGISTRY_TOKEN registry.gitlab.com
   script:
     - "make endtoend-test-kube"
   except:
