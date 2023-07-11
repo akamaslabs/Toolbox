@@ -5,6 +5,7 @@ echo started > /tmp/healthcheck
 if [ -e /tmp/akamas_password ]; then
 	akamas_password=$(cat /tmp/akamas_password)
 	echo "Password for user akamas is: $akamas_password" 1>&2
+	sed -i "s/#PASSWORD#/$akamas_password/" /home/akamas/README
 	rm -f /tmp/akamas_password
 fi
 
