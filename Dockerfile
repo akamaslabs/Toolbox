@@ -53,8 +53,6 @@ RUN apt-get update &&\
 
 RUN groupdel docker && groupadd -g ${DOCKER_GROUP_ID} docker
 RUN useradd --user-group --create-home --shell /bin/bash -u ${BUILD_USER_ID} -G sudo,docker ${BUILD_USER} && newgrp docker
-RUN build_password=$(openssl rand -hex 8) && echo $build_password > /tmp/akamas_password && chown ${BUILD_USER}:${BUILD_USER} /tmp/akamas_password && echo "${BUILD_USER}:${build_password}" | chpasswd
-
 
 RUN locale-gen en_US.UTF-8
 ENV LANG en_US.UTF-8
