@@ -107,5 +107,5 @@ RUN mkdir -p /var/run/sshd
 USER ${BUILD_USER}
 WORKDIR /home/${BUILD_USER}
 
-ENTRYPOINT ["/entrypoint.sh"]
+ENTRYPOINT bash /entrypoint.sh
 SHELL ["/bin/bash", "-l", "-c"]
