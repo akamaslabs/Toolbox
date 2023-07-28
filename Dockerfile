@@ -4,7 +4,7 @@ ENV BUILD_USER_ID=199
 ENV BUILD_USER=akamas
 ARG DOCKER_GROUP_ID=200
 
-RUN  apt-get update &&\
+RUN apt-get update &&\
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     apt-transport-https \
     build-essential \
@@ -66,7 +66,7 @@ RUN cd /opt && tar xzf OpenJDK11U-jdk_x64_linux_hotspot_11.0.10_9.tar.gz && rm /
 
 RUN pip3 install --upgrade pip
 
-RUN pip3 install setuptools awscli boto boto3 botocore wheel
+RUN pip3 install setuptools awscli boto boto3 botocore wheel kubernetes
 
 RUN wget https://github.com/mikefarah/yq/releases/download/v4.33.3/yq_linux_amd64 &&\
     mv yq_linux_amd64 /usr/bin/yq &&\
