@@ -81,11 +81,11 @@ RUN curl -o akamas_cli -O https://s3.us-east-2.amazonaws.com/akamas/cli/$(curl h
 ADD --chown=${BUILD_USER}:${BUILD_USER} files/README /home/${BUILD_USER}/README
 ADD files/entrypoint.sh /
 RUN chmod +x /entrypoint.sh
-RUN mkdir -p /home/${BUILD_USER}/.ssh && chown ${BUILD_USER}:${BUILD_USER} /home/${BUILD_USER}/.ssh
-ADD --chown=${BUILD_USER}:${BUILD_USER} files/id_rsa.pub /home/${BUILD_USER}/.ssh/authorized_keys
-RUN chmod 600 /home/${BUILD_USER}/.ssh/authorized_keys
 RUN mkdir -p /work/.kube && chown -R ${BUILD_USER}:${BUILD_USER} /work
 RUN ln -s /work/.kube/ /home/akamas/.kube && chown ${BUILD_USER}:${BUILD_USER} /home/akamas/.kube/
+RUN mkdir -p /work/.ssh && chown -R ${BUILD_USER}:${BUILD_USER} /work
+RUN ln -s /work/.ssh/ /home/akamas/.ssh && chown ${BUILD_USER}:${BUILD_USER} /home/akamas/.ssh/
+
 RUN echo "${BUILD_USER} ALL=(ALL:ALL) NOPASSWD: ALL" >> /etc/sudoers
 
 RUN echo "export PATH=/opt/java/bin:$PATH" >> /home/${BUILD_USER}/.bashrc
@@ -100,8 +100,6 @@ RUN curl -O https://s3.us-east-2.amazonaws.com/akamas/cli/$(curl https://s3.us-e
 
 ADD --chown=${BUILD_USER}:${BUILD_USER} files/akamasconf /home/${BUILD_USER}/.akamas/
 
-RUN if [ ! -f "/etc/ssh/ssh_host_rsa_key" ]; then ssh-keygen -f /etc/ssh/ssh_host_rsa_key -N '' -t rsa; fi
-RUN ssh-keygen -f /etc/ssh/ssh_host_dsa_key -N '' -t dsa
 RUN mkdir -p /var/run/sshd
 
 USER ${BUILD_USER}
