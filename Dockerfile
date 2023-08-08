@@ -88,8 +88,9 @@ RUN ln -s /work/.ssh/ /home/akamas/.ssh && chown ${BUILD_USER}:${BUILD_USER} /ho
 
 RUN echo "${BUILD_USER} ALL=(ALL:ALL) NOPASSWD: ALL" >> /etc/sudoers
 
-RUN echo "export PATH=/opt/java/bin:$PATH" >> /home/${BUILD_USER}/.bashrc
-RUN echo "export KUBECONFIG=/work/.kube/config" >> /home/${BUILD_USER}/.bashrc
+RUN echo "export PATH=/opt/java/bin:$PATH\n" \
+         "export KUBECONFIG=/work/.kube/config\n" \
+         "alias k=kubectl" >> /home/${BUILD_USER}/.bashrc
 
 RUN curl -O https://s3.us-east-2.amazonaws.com/akamas/cli/$(curl https://s3.us-east-2.amazonaws.com/akamas/cli/stable.txt)/linux_64/akamas_autocomplete.sh && \
     mkdir -p /home/${BUILD_USER}/.akamas && \

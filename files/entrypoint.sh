@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [ ! -d /work/.ssh/ ]; then
-	# wait for /work volume mounted and chowned 
+	# wait for /work volume mounted and chowned
 	retries=12
 	while [ ! -d /work/.ssh/ ] && [ $retries -gt 0 ];
 	do
@@ -15,12 +15,13 @@ fi
 if [ ! -e /work/akamas_password ]; then
 	akamas_password=$(openssl rand -hex 8)
 	echo $akamas_password > /work/akamas_password
-	echo "akamas:${akamas_password}" | sudo chpasswd
-	sed -i "s/#PASSWORD#/$akamas_password/" /home/akamas/README
-	mkdir -p /work/.kube
 else
 	akamas_password=$(cat /work/akamas_password)
 fi
+
+echo "akamas:${akamas_password}" | sudo chpasswd
+sed -i "s/#PASSWORD#/$akamas_password/" /home/akamas/README
+mkdir -p /work/.kube
 
 if [ ! -f /etc/ssh/ssh_host_rsa_key ]; then
 	echo $akamas_password | sudo -S ssh-keygen -q -f /etc/ssh/ssh_host_rsa_key -N '' -t rsa
@@ -31,6 +32,6 @@ fi
 
 echo "Container started" 1>&2
 echo started > /tmp/healthcheck
-echo "Password for user akamas is: $akamas_password" 1>&2
+echo "You can ssh into this container with user 'akamas' and password '$akamas_password'" 1>&2
 
 echo $akamas_password | sudo -S /usr/sbin/sshd -D -E /var/log/sshd.log

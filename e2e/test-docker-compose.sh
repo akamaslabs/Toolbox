@@ -2,7 +2,6 @@
 
 docker-compose pull
 docker-compose up -d
-docker ps
 sleep 10
 docker ps
 curr_password=$(docker-compose logs management-container | grep Password | cut -d ':' -f 2 | sed 's/ //')
