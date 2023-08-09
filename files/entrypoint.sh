@@ -20,7 +20,7 @@ else
 fi
 
 echo "akamas:${akamas_password}" | sudo chpasswd
-sed -i "s/#PASSWORD#/$akamas_password/" /home/akamas/README
+sed -i "s/#PASSWORD#/$akamas_password/" /home/akamas/README && mv /home/akamas/README /work/README
 mkdir -p /work/.kube
 
 if [ ! -f /etc/ssh/ssh_host_rsa_key ]; then
