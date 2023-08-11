@@ -1,4 +1,4 @@
-apiAddress: http://localhost:8000
+apiAddress: http://kong:8000
 organization: akamas
-verifySsl: true
+verifySsl: false
 workspace: default
