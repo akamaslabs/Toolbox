@@ -24,6 +24,8 @@ RUN apt-get update &&\
     sshpass \
     locales \
     vim \
+    less \
+    file \
     zip \
     unzip \
     sudo \

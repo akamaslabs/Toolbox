@@ -43,7 +43,7 @@ e2e-deploy-kube:
     - Bash
   stage: e2e
   variables:
-    KUBE_CLUSTER: "dev"
+    KUBE_CLUSTER: dev
   dependencies:
     - build-and-push
   script:
