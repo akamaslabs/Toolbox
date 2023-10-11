@@ -18,10 +18,6 @@ IMAGE_NAME := ${AKAMAS_REGISTRY}/akamas/management-container
 
 AWS_DEFAULT_REGION ?= us-east-2
 
-VALUES_FILE := roles/akamas-kube/files/values-e2e-management.yaml.jinja2
-
-AKAMAS_CHART_E2E_FILE := deploy/playbooks/${VALUES_FILE}
-
 
 include deploy/makefile
 
@@ -67,8 +63,13 @@ endtoend-test-docker: build-docker-compose-yml login-ecr					## Test e2e with do
 endtoend-test-kube: 		##  Test e2e with kubernetes
 	cd e2e && bash -x test-kubernetes.sh ${KUBE_CLUSTER} $(ENV_NAME)$(CI_PIPELINE_ID) && cd -
 
+.PHONY: build-values
+build-values:
+	@echo Building Helm values file for the user service && \
+	yq '.managementPod.image.tag="${VERSION}"' $(VALUES_FILE).tpl | tee $(VALUES_FILE)
+
 .PHONY: info
-info:    					## Print some info on the repo
+info: 					## Print some info on the repo
 	@echo "this_version: $(version)" && \
 	echo "this_branch: $(branch)" && \
 	echo "repo_location: $(repo_location)" && \
