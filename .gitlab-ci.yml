@@ -4,6 +4,7 @@ variables:
 
 stages:
   - build-push-image
+  - deploy
   - e2e
   - e2e-cleanup
 
@@ -18,73 +19,62 @@ build-and-push:
     - make ci target=push
 
 e2e-docker-compose:
-  only:
-    - develop
-    - master
-    - /^.*e2e.*$/i
-    - merge_requests
   stage: e2e
   tags:
     - Bash
   before_script:
      - docker login -u $GITLAB_COM_REGISTRY_USER -p $GITLAB_COM_REGISTRY_TOKEN registry.gitlab.com
-  dependencies:
-    - build-and-push
   script:
     - make endtoend-test-docker
+  needs:
+    - build-and-push
+  rules:
+    - if: $CI_COMMIT_MESSAGE =~ /e2e[-_]skip|skip[-_]e2e/
+      when: never
+    - if: $CI_COMMIT_MESSAGE =~ /e2e/
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_COMMIT_BRANCH == 'master'
+    - when: on_success
 
-e2e-deploy-kube:
-  only:
-    - develop
-    - master
-    - /^.*e2e.*$/i
-    - merge_requests
+deploy-kube:
   tags:
     - Bash
-  stage: e2e
+  stage: deploy
   variables:
     KUBE_CLUSTER: dev
-  dependencies:
-    - build-and-push
   script:
     - echo "Deploying akamas to cluster $KUBE_CLUSTER"
     - make provisioner target=debug
     - make build-values
     - make provisioner target=deploy-kube
-  except:
-    variables:
-      - $CI_COMMIT_MESSAGE =~ /skip-e2e/
-      - $CI_COMMIT_MESSAGE =~ /.*only-e2e-docker.*/
   artifacts:
     exclude:
       - "*.jar"
     paths:
       - deploy/playbooks/target
     expire_in: 240 minutes
+  needs:
+    - build-and-push
+  rules:
+    - if: $CI_COMMIT_MESSAGE =~ /e2e[-_]skip|skip[-_]e2e/
+      when: never
+    - if: $CI_COMMIT_MESSAGE =~ /e2e/
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_COMMIT_BRANCH == 'master'
+    - when: on_success
 
 e2e-kube:
-  only:
-    - develop
-    - master
-    - /^.*e2e.*$/i
-    - merge_requests
   tags:
     - Bash
   stage: e2e
   variables:
     KUBE_E2E: "true"
-  dependencies:
-    - e2e-deploy-kube
   script:
     - make ci target=endtoend-test-kube
-  allow_failure: true
-  except:
-    variables:
-      - $CI_COMMIT_MESSAGE =~ /skip-e2e/
-      - $CI_COMMIT_MESSAGE =~ /skip-convergence/
-      - $CI_COMMIT_MESSAGE =~ /.*only-e2e-docker.*/
   needs:
-    - e2e-deploy-kube
+    - deploy-kube
   artifacts:
     exclude:
       - "*.jar"
@@ -93,28 +83,31 @@ e2e-kube:
       - e2e/results
       - e2e/verifier/values
     expire_in: 2 days
+  dependencies:
+    - deploy-kube
+  rules:
+    - if: $CI_COMMIT_MESSAGE =~ /e2e[-_]skip|skip[-_]e2e/
+      when: never
+    - if: $CI_COMMIT_MESSAGE =~ /e2e/
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_COMMIT_BRANCH == 'master'
+    - when: on_success
 
-terminate-e2e-kube:
-  only:
-    - develop
-    - master
-    - /^.*e2e.*$/i
-    - merge_requests
+terminate-kube:
   tags:
     - Bash
   stage: e2e-cleanup
   variables:
     KUBE_CLUSTER: "dev"
-  dependencies:
-    - e2e-kube
-  except:
-    variables:
-      - $CI_COMMIT_MESSAGE =~ /skip-e2e/
-      - $CI_COMMIT_MESSAGE =~ /keep-e2e/
-      - $CI_COMMIT_MESSAGE =~ /.*only-e2e-docker.*/
   script:
     - echo "Terminating E2E environment"
     - make provisioner target=terminate-kube-environment
+  allow_failure: true
   needs:
+    - deploy-kube
     - e2e-kube
-    - e2e-deploy-kube
+  rules:
+    - if: $CI_COMMIT_MESSAGE =~ /e2e[-_]skip|skip[-_]e2e/
+      when: never
+    - when: always

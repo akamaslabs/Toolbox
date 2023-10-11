@@ -18,6 +18,7 @@ IMAGE_NAME := ${AKAMAS_REGISTRY}/akamas/management-container
 
 AWS_DEFAULT_REGION ?= us-east-2
 
+ENV_NAME ?= mgmtpod
 
 include deploy/makefile
 
@@ -29,7 +30,7 @@ endif
 
 .PHONY: ci
 ci:	check-target 			## Run target inside Docker. E.g.: make ci target=build
-	docker run --pull always --rm \
+	docker run --pull missing --rm \
 	-v $(repo_location):/workdir -w /workdir \
 	-v /var/run/docker.sock:/var/run/docker.sock \
 	--network host \
@@ -39,7 +40,7 @@ ci:	check-target 			## Run target inside Docker. E.g.: make ci target=build
 	--env DOCKER_GROUP_ID=$(DOCKER_GROUP_ID) \
 	--env ENV_NAME=$(ENV_NAME) \
 	--env CI_PIPELINE_ID=$(CI_PIPELINE_ID) \
-	registry.gitlab.com/akamas/devops/build-base/build-base:1.8.3 /bin/sh -c "make $(target)"
+	registry.gitlab.com/akamas/devops/build-base/build-base:1.8.4 /bin/sh -c "make $(target)"
 
 .PHONY: push
 push:   login-ecr		## Push docker image
@@ -65,7 +66,7 @@ endtoend-test-kube: 		##  Test e2e with kubernetes
 
 .PHONY: build-values
 build-values:
-	@echo Building Helm values file for the user service && \
+	@echo Building Helm values file for the management pod && \
 	yq '.managementPod.image.tag="${VERSION}"' $(VALUES_FILE).tpl | tee $(VALUES_FILE)
 
 .PHONY: info
