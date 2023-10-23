@@ -18,10 +18,7 @@ IMAGE_NAME := ${AKAMAS_REGISTRY}/akamas/management-container
 
 AWS_DEFAULT_REGION ?= us-east-2
 
-VALUES_FILE := roles/akamas-kube/files/values-e2e-management.yaml.jinja2
-
-AKAMAS_CHART_E2E_FILE := deploy/playbooks/${VALUES_FILE}
-
+ENV_NAME ?= mgmtpod
 
 include deploy/makefile
 
@@ -33,7 +30,7 @@ endif
 
 .PHONY: ci
 ci:	check-target 			## Run target inside Docker. E.g.: make ci target=build
-	docker run --pull always --rm \
+	docker run --pull missing --rm \
 	-v $(repo_location):/workdir -w /workdir \
 	-v /var/run/docker.sock:/var/run/docker.sock \
 	--network host \
@@ -43,7 +40,7 @@ ci:	check-target 			## Run target inside Docker. E.g.: make ci target=build
 	--env DOCKER_GROUP_ID=$(DOCKER_GROUP_ID) \
 	--env ENV_NAME=$(ENV_NAME) \
 	--env CI_PIPELINE_ID=$(CI_PIPELINE_ID) \
-	registry.gitlab.com/akamas/devops/build-base/build-base:1.8.3 /bin/sh -c "make $(target)"
+	registry.gitlab.com/akamas/devops/build-base/build-base:1.8.4 /bin/sh -c "make $(target)"
 
 .PHONY: push
 push:   login-ecr		## Push docker image
@@ -67,8 +64,13 @@ endtoend-test-docker: build-docker-compose-yml login-ecr					## Test e2e with do
 endtoend-test-kube: 		##  Test e2e with kubernetes
 	cd e2e && bash -x test-kubernetes.sh ${KUBE_CLUSTER} $(ENV_NAME)$(CI_PIPELINE_ID) && cd -
 
+.PHONY: build-values
+build-values:
+	@echo Building Helm values file for the management pod && \
+	yq '.managementPod.image.tag="${VERSION}"' $(VALUES_FILE).tpl | tee $(VALUES_FILE)
+
 .PHONY: info
-info:    					## Print some info on the repo
+info: 					## Print some info on the repo
 	@echo "this_version: $(version)" && \
 	echo "this_branch: $(branch)" && \
 	echo "repo_location: $(repo_location)" && \

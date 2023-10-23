@@ -24,6 +24,8 @@ RUN apt-get update &&\
     sshpass \
     locales \
     vim \
+    less \
+    file \
     zip \
     unzip \
     sudo \
@@ -32,6 +34,7 @@ RUN apt-get update &&\
     dnsutils \
     telnet \
     netcat \
+    postgresql-client \
     wget && \
     apt-get autoremove -y && apt-get clean -y
 
@@ -73,6 +76,9 @@ RUN wget https://github.com/mikefarah/yq/releases/download/v4.33.3/yq_linux_amd6
 RUN curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 
 RUN curl -LO "https://dl.k8s.io/release/v1.23.16/bin/linux/amd64/kubectl" && install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+
+RUN wget https://github.com/derailed/k9s/releases/download/v0.27.4/k9s_Linux_amd64.tar.gz && tar xfz k9s_Linux_amd64.tar.gz -C /usr/local/bin/ && \
+    chmod 755 /usr/local/bin/k9s && rm -f k9s_Linux_amd64.tar.gz
 
 RUN curl -o akamas_cli -O https://s3.us-east-2.amazonaws.com/akamas/cli/$(curl https://s3.us-east-2.amazonaws.com/akamas/cli/stable.txt)/linux_64/akamas && \
     mv akamas_cli /usr/local/bin/akamas && \
