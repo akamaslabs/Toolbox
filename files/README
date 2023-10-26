@@ -1,17 +1,17 @@
-README
+# README
 
-# DEFAULT USER
+## DEFAULT USER
 
-Default user is `akamas` which is listed as a sudoer. You can freely use `sudo` command, as well as promoting to superuser with `sudo su -`
+The default user is `akamas`, which is listed as a sudoer. You can use the `sudo` command, as well as promoting to superuser with `sudo su -`.
 
-# OPERATING SYSTEM
+## OPERATING SYSTEM
 
-Underlying system is Ubuntu. You can install missing packages with `sudo apt install <packagename>`
+The underlying system is Ubuntu. You can install any missing packages with the command `sudo apt install <packagename>`.
 
-# PERSISTENT STORAGE
+## PERSISTENT STORAGE
 
-Folder named `/work` is persisted on a dedicated volume that will be remounted across restarts. You should store your important data files and/or config files and/or Akamas YAMLs there
+The `/work` directory mounts a dedicated volume that persists across restarts. You can store Akamas artifacts, scripts, templates, and other important files there.
 
-# SSH ACCESS
+## SSH ACCESS
 
-You can also connect to this management pod via ssh protocol. The only user enabled for ssh connection is 'akamas'. The password is #PASSWORD#
+You can connect to this management pod via ssh protocol. The only user enabled for ssh connection is 'akamas'. The password is '#PASSWORD#'.

@@ -67,7 +67,7 @@ RUN wget https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jd
     cd /opt && tar xzf OpenJDK11U-jdk_x64_linux_hotspot_11.0.10_9.tar.gz && rm /opt/OpenJDK11U-jdk_x64_linux_hotspot_11.0.10_9.tar.gz && mv /opt/jdk-11.0.10+9/ /opt/jdk-11.0.10_9/ && ln -s /opt/jdk-11.0.10_9/ /opt/java
 
 RUN pip3 install --upgrade pip && \
-    pip3 install setuptools awscli boto boto3 botocore wheel kubernetes
+    pip3 install setuptools wheel kubernetes
 
 RUN wget https://github.com/mikefarah/yq/releases/download/v4.33.3/yq_linux_amd64 &&\
     mv yq_linux_amd64 /usr/bin/yq &&\
@@ -80,17 +80,8 @@ RUN curl -LO "https://dl.k8s.io/release/v1.23.16/bin/linux/amd64/kubectl" && ins
 RUN wget https://github.com/derailed/k9s/releases/download/v0.27.4/k9s_Linux_amd64.tar.gz && tar xfz k9s_Linux_amd64.tar.gz -C /usr/local/bin/ && \
     chmod 755 /usr/local/bin/k9s && rm -f k9s_Linux_amd64.tar.gz
 
-RUN curl -o akamas_cli -O https://s3.us-east-2.amazonaws.com/akamas/cli/$(curl https://s3.us-east-2.amazonaws.com/akamas/cli/stable.txt)/linux_64/akamas && \
-    mv akamas_cli /usr/local/bin/akamas && \
-    chmod 755 /usr/local/bin/akamas
-
-ADD --chown=${BUILD_USER}:${BUILD_USER} files/README /home/${BUILD_USER}/README
-ADD files/entrypoint.sh /
-RUN chmod +x /entrypoint.sh
-RUN mkdir -p /work/.kube && chown -R ${BUILD_USER}:${BUILD_USER} /work
-RUN ln -s /work/.kube/ /home/${BUILD_USER}/.kube && chown ${BUILD_USER}:${BUILD_USER} /home/akamas/.kube/
-RUN mkdir -p /work/.ssh && chown -R ${BUILD_USER}:${BUILD_USER} /work
-RUN ln -s /work/.ssh/ /home/${BUILD_USER}/.ssh && chown ${BUILD_USER}:${BUILD_USER} /home/akamas/.ssh/
+RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && \
+    unzip awscliv2.zip && sudo ./aws/install && rm -rf awscliv2.zip aws/
 
 RUN echo "${BUILD_USER} ALL=(ALL:ALL) NOPASSWD: ALL" >> /etc/sudoers
 
@@ -98,7 +89,11 @@ RUN echo "export PATH=/opt/java/bin:$PATH\n" \
          "export KUBECONFIG=/work/.kube/config\n" \
          "alias k=kubectl" >> /home/${BUILD_USER}/.bashrc
 
-RUN curl -O https://s3.us-east-2.amazonaws.com/akamas/cli/$(curl https://s3.us-east-2.amazonaws.com/akamas/cli/stable.txt)/linux_64/akamas_autocomplete.sh && \
+RUN curl -o akamas_cli https://s3.us-east-2.amazonaws.com/akamas/cli/$(curl -s https://s3.us-east-2.amazonaws.com/akamas/cli/stable.txt)/linux_64/akamas && \
+    mv akamas_cli /usr/local/bin/akamas && \
+    chmod 755 /usr/local/bin/akamas
+
+RUN curl -O https://s3.us-east-2.amazonaws.com/akamas/cli/$(curl -s https://s3.us-east-2.amazonaws.com/akamas/cli/stable.txt)/linux_64/akamas_autocomplete.sh && \
     mkdir -p /home/${BUILD_USER}/.akamas && \
     mv akamas_autocomplete.sh /home/${BUILD_USER}/.akamas && \
     chmod 755 /home/${BUILD_USER}/.akamas/akamas_autocomplete.sh && \
@@ -108,6 +103,14 @@ RUN curl -O https://s3.us-east-2.amazonaws.com/akamas/cli/$(curl https://s3.us-e
 ADD --chown=${BUILD_USER}:${BUILD_USER} files/akamasconf /home/${BUILD_USER}/.akamas/
 
 RUN mkdir -p /var/run/sshd
+
+ADD --chown=${BUILD_USER}:${BUILD_USER} files/README /home/${BUILD_USER}/README
+ADD files/entrypoint.sh /
+RUN chmod +x /entrypoint.sh
+RUN mkdir -p /work/.kube && chown -R ${BUILD_USER}:${BUILD_USER} /work
+RUN ln -s /work/.kube/ /home/${BUILD_USER}/.kube && chown ${BUILD_USER}:${BUILD_USER} /home/akamas/.kube/
+RUN mkdir -p /work/.ssh && chown -R ${BUILD_USER}:${BUILD_USER} /work
+RUN ln -s /work/.ssh/ /home/${BUILD_USER}/.ssh && chown ${BUILD_USER}:${BUILD_USER} /home/akamas/.ssh/
 
 USER ${BUILD_USER}
 
