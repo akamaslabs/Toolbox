@@ -1,0 +1,10 @@
+Port 2222
+HostKey /home/akamas/.sshd/ssh_host_rsa_key
+HostKey /home/akamas/.sshd/ssh_host_dsa_key
+AuthorizedKeysFile  /home/akamas/.ssh/authorized_keys
+ChallengeResponseAuthentication no
+UsePAM yes
+Subsystem   sftp    /usr/lib/ssh/sftp-server
+PasswordAuthentication yes
+PermitEmptyPasswords yes
+PidFile /home/akamas/.sshd/sshd.pid

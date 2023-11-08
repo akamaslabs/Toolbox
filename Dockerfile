@@ -1,4 +1,4 @@
-FROM ubuntu:20.04
+FROM ubuntu:22.04
 
 ENV BUILD_USER_ID=199
 ENV BUILD_USER=akamas
@@ -105,12 +105,11 @@ ADD --chown=${BUILD_USER}:${BUILD_USER} files/akamasconf /home/${BUILD_USER}/.ak
 RUN mkdir -p /var/run/sshd
 
 ADD --chown=${BUILD_USER}:${BUILD_USER} files/README /home/${BUILD_USER}/README
+RUN mkdir -p /home/${BUILD_USER}/.ssh /home/${BUILD_USER}/.sshd
+ADD --chown=${BUILD_USER}:${BUILD_USER} files/sshd_config /home/${BUILD_USER}/.sshd/sshd_config
+RUN chown -R ${BUILD_USER}:${BUILD_USER} /home/${BUILD_USER}
 ADD files/entrypoint.sh /
 RUN chmod +x /entrypoint.sh
-RUN mkdir -p /work/.kube && chown -R ${BUILD_USER}:${BUILD_USER} /work
-RUN ln -s /work/.kube/ /home/${BUILD_USER}/.kube && chown ${BUILD_USER}:${BUILD_USER} /home/akamas/.kube/
-RUN mkdir -p /work/.ssh && chown -R ${BUILD_USER}:${BUILD_USER} /work
-RUN ln -s /work/.ssh/ /home/${BUILD_USER}/.ssh && chown ${BUILD_USER}:${BUILD_USER} /home/akamas/.ssh/
 
 USER ${BUILD_USER}
 
