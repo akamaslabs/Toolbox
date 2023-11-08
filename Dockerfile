@@ -111,6 +111,8 @@ RUN chown -R ${BUILD_USER}:${BUILD_USER} /home/${BUILD_USER}
 ADD files/entrypoint.sh /
 RUN chmod +x /entrypoint.sh
 
+RUN echo "${BUILD_USER}:password" | chpasswd
+
 USER ${BUILD_USER}
 
 ENTRYPOINT bash /entrypoint.sh
