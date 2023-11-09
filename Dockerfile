@@ -104,14 +104,15 @@ ADD --chown=${BUILD_USER}:${BUILD_USER} files/akamasconf /home/${BUILD_USER}/.ak
 
 RUN mkdir -p /var/run/sshd
 
-ADD --chown=${BUILD_USER}:${BUILD_USER} files/README /home/${BUILD_USER}/README
-RUN mkdir -p /home/${BUILD_USER}/.ssh /home/${BUILD_USER}/.sshd
-ADD --chown=${BUILD_USER}:${BUILD_USER} files/sshd_config /home/${BUILD_USER}/.sshd/sshd_config
-RUN chown -R ${BUILD_USER}:${BUILD_USER} /home/${BUILD_USER}
+RUN mkdir -p /home/${BUILD_USER}/.ssh /home/${BUILD_USER}/.sshd /work/.kube
+# On boot we'll need to update the passwdord with a randomly-generated one. Since
+# in kube envs we may not be able to `sudo`, and passwd doesn't work well without
+# a password, we need to setup a default one
+RUN echo 'password' > /home/${BUILD_USER}/.ssh/def_pwd && \
+    echo "${BUILD_USER}:$(cat /home/${BUILD_USER}/.ssh/def_pwd)" | chpasswd
+RUN chown -R ${BUILD_USER}:${BUILD_USER} /home/${BUILD_USER} /work/
 ADD files/entrypoint.sh /
 RUN chmod +x /entrypoint.sh
-
-RUN echo "${BUILD_USER}:password" | chpasswd
 
 USER ${BUILD_USER}
 
