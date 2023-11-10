@@ -17,6 +17,11 @@ build-and-push:
   script:
     - make ci target=build
     - make ci target=push
+  rules:
+    - if: $CI_COMMIT_MESSAGE =~ /e2e[-_]skip|skip[-_]e2e/
+      when: never
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+    - when: on_success
 
 e2e-docker-compose:
   stage: e2e
@@ -25,7 +30,7 @@ e2e-docker-compose:
   before_script:
      - docker login -u $GITLAB_COM_REGISTRY_USER -p $GITLAB_COM_REGISTRY_TOKEN registry.gitlab.com
   script:
-    - make endtoend-test-docker
+    - make e2e-docker
   needs:
     - build-and-push
   rules:
@@ -72,7 +77,7 @@ e2e-kube:
   variables:
     KUBE_E2E: "true"
   script:
-    - make ci target=endtoend-test-kube
+    - make ci target=e2e-kube
   needs:
     - deploy-kube
   artifacts:

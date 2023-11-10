@@ -20,6 +20,8 @@ AWS_DEFAULT_REGION ?= us-east-2
 
 ENV_NAME ?= mgmtpod
 
+CHART_VERSION := "1.3.0-mgmt"
+
 include deploy/makefile
 
 .PHONY: check-target
@@ -56,13 +58,13 @@ build: 			## Build docker image
 build-docker-compose-yml:    					## Build e2e/docker-compose.yml
 	@export CURR_VERSION=${VERSION} && cat e2e/docker-compose.yml.template | envsubst >e2e/docker-compose.yml
 
-.PHONY: endtoend-test-docker
-endtoend-test-docker: build-docker-compose-yml login-ecr					## Test e2e with docker-compose
-	cd e2e && bash -x test-docker-compose.sh && cd -
+.PHONY: e2e-docker
+e2e-docker: build-docker-compose-yml login-ecr					## Test e2e with docker-compose
+	cd e2e && bash -x test-docker-compose.sh
 
-.PHONY: endtoend-test-kube
-endtoend-test-kube: 		##  Test e2e with kubernetes
-	cd e2e && bash -x test-kubernetes.sh ${KUBE_CLUSTER} $(ENV_NAME)$(CI_PIPELINE_ID) && cd -
+.PHONY: e2e-kube
+e2e-kube: 		##  Test e2e with kubernetes
+	cd e2e && bash -x test-kubernetes.sh ${KUBE_CLUSTER} $(ENV_NAME)$(CI_PIPELINE_ID)
 
 .PHONY: build-values
 build-values:
