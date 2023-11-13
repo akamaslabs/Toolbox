@@ -42,7 +42,7 @@ RUN ln -s /usr/bin/python3 /usr/bin/python
 
 #Setup docker repo
 RUN  mkdir -p /etc/apt/keyrings &&\
-     curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg &&\
+     curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg && \
      echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
   $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
 
@@ -69,7 +69,7 @@ RUN wget https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jd
 RUN pip3 install --upgrade pip && \
     pip3 install setuptools wheel kubernetes
 
-RUN wget https://github.com/mikefarah/yq/releases/download/v4.33.3/yq_linux_amd64 &&\
+RUN wget https://github.com/mikefarah/yq/releases/download/v4.35.2/yq_linux_amd64 && \
     mv yq_linux_amd64 /usr/bin/yq &&\
     chmod +x /usr/bin/yq
 
