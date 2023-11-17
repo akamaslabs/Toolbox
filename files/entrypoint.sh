@@ -2,7 +2,7 @@
 
 WORK_FLD=/work
 DBG="${DBG:-false}"
-
+USER="${USER:-$(whoami)}"
 #########################
 # Functions
 #########################
