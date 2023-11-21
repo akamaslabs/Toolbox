@@ -14,12 +14,24 @@ dbg () {
 initialize_credentials () {
   dbg 'Initializing credentials'
   mkdir -p "${HOME}/.ssh" "${HOME}/.sshd"
-  [ ! -f "${HOME}/.ssh/password" ] && echo $RANDOM | md5sum | head -c 20 > "${HOME}/.ssh/password"
-  [ ! -f "${HOME}/.ssh/id_rsa" ] && \
+  if [ ! -f "${HOME}/.ssh/password" ] ; then
+   echo "Password file not found, will generate a new random one."
+   echo $RANDOM | md5sum | head -c 20 > "${HOME}/.ssh/password"
+  fi
+  if [ ! -f "${HOME}/.ssh/id_rsa" ] ; then 
+    echo "Private key file not found, will generate a new one."
     ssh-keygen -q -f "${HOME}/.ssh/id_rsa" -N '' -t rsa -b 2048 && \
     cp "${HOME}/.ssh/id_rsa.pub" "${HOME}/.ssh/authorized_keys"
-  [ ! -f "${HOME}/.sshd/ssh_host_rsa_key" ] && cat "${HOME}/.ssh/password" | ssh-keygen -q -f "${HOME}/.sshd/ssh_host_rsa_key" -N '' -t rsa
-  [ ! -f "${HOME}/.sshd/ssh_host_dsa_key" ] && cat "${HOME}/.ssh/password" | ssh-keygen -q -f "${HOME}/.sshd/ssh_host_dsa_key" -N '' -t dsa
+  fi 
+  
+  if [ ! -f "${HOME}/.sshd/ssh_host_rsa_key" ] ; then
+    echo "Host rsa key file not found, will generate a new one."
+    cat "${HOME}/.ssh/password" | ssh-keygen -q -f "${HOME}/.sshd/ssh_host_rsa_key" -N '' -t rsa
+  fi
+  if [ ! -f "${HOME}/.sshd/ssh_host_dsa_key" ] ; then
+   echo "Host rsa key file not found, will generate a new one."
+   cat "${HOME}/.ssh/password" | ssh-keygen -q -f "${HOME}/.sshd/ssh_host_dsa_key" -N '' -t dsa
+  fi
   chmod 400 ${HOME}/.ssh/* ${HOME}/.sshd/*
   echo "Credentials initialized"
 }
@@ -27,7 +39,7 @@ initialize_credentials () {
 update_password () {
   # use passwd and not chpassw since we need to run it as non-sudo
   dbg "Updating password with $1"
-  echo -e "$(cat ${HOME}/.ssh/def_pwd)\n$1\n$1" | passwd > /dev/null
+  echo -e "$(cat ${HOME}/def_pwd)\n$1\n$1" | passwd > /dev/null
 
   if [ $? -ne 0 ] ; then
     echo "ERROR: unable to update ${USER} password"
@@ -35,48 +47,77 @@ update_password () {
   else
     echo Updated $USER user password
   fi
+  rm -f "${HOME}/def_pwd"
 }
 
 #########################
 # Main
 #########################
 
-if [ -z "${KUBERNETES_SERVICE_HOST}" ]; then
+echo "Starting Managment pod"
+date
+echo "Env:"
+env
+
+echo "Home content:"
+find ~ -ls
+echo "Workdir content"
+find "$WORK_FLD" -ls
+
+test -f "${HOME}/.ssh/password"
+GENERATED_PASSWORD_EXISTS=$?
+echo "Generated password exists: $GENERATED_PASSWORD_EXISTS"
+test -f "${HOME}/def_pwd"
+DEFAULT_PASSWORD_EXISTS=$?
+echo "Default password exists: $DEFAULT_PASSWORD_EXISTS"
+
+if [[ -z "${KUBERNETES_SERVICE_HOST}" ]] && [[ "$GENERATED_PASSWORD_EXISTS" -eq 1 ]]; then
   # Initialize keys for DOCKER
   # No need for KUBE, secrets provided through secrets
   initialize_credentials
 fi
 
+echo "Home content:"
+find ~ -ls
+
 PASS="$(cat ${HOME}/.ssh/password)"
 
-if [ -f "${HOME}/.ssh/def_pwd" ] ; then
-  dbg 'Default password found'
+if [ "$DEFAULT_PASSWORD_EXISTS" -eq 0 ] ; then
+  echo 'Default password found, updating it.'
   # Update default password with the random one
   update_password "$PASS"
-  dbg 'Removing default password'
-  rm -f "${HOME}/.ssh/def_pwd"   # delete, to avoid re-running on next docker restart
 fi
 
+echo "Home content:"
+find ~ -ls
+
+echo "Trying running sudo with pass: $PASS"
+set -x
 # If can sudo
 if echo "$PASS" | sudo -S -v ; then
-  dbg 'Try to own work folder'
+  echo 'Try to own work folder'
   echo "$PASS" | sudo -S chown "$USER:$USER" "${WORK_FLD}"
   [ -d "${WORK_FLD}/.kube" ] && echo "$PASS" | sudo -S chown "$USER:$USER" "${WORK_FLD}/.kube"
 else
   echo WARNING: cannot run as privileged user
 fi
+set +x
+
+echo "Home content:"
+find ~ -ls
+
 
 # Check we can write into /work
 touch "$WORK_FLD/.canary"
 [ $? -ne 0 ] && echo WARNING: Unable to write on the volume mounted on $WORK_FLD. Manually fix your configurations to ensure the persistence of your artifacts.
 rm -f "$WORK_FLD/.canary"
-
-mkdir -p "${WORK_FLD}/.kube" && \
-ln -s "${WORK_FLD}/.kube" "${HOME}/.kube"
-
+set -x
+mkdir -p "${WORK_FLD}/.kube"
+[ ! -L "${HOME}/.kube" ] && ln -s "${WORK_FLD}/.kube" "${HOME}/.kube"
+set +x
 echo "Container started" 1>&2
 echo "You can ssh into this container with user 'akamas' and password '$PASS'" 1>&2
-
+find ~ -ls
 # Start sshd
 if [ -n "${KUBERNETES_SERVICE_HOST}" ]; then
   # Set k8s startup probe
@@ -90,6 +131,5 @@ else
     -h "${HOME}/.sshd/ssh_host_rsa_key" \
     -h "${HOME}/.sshd/ssh_host_dsa_key" -e |& tee -a "${HOME}/sshd.log"
 fi
-
 echo SSHD exited
 sleep 5
