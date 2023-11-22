@@ -7,12 +7,8 @@ USER="${USER:-$(whoami)}"
 # Functions
 #########################
 
-dbg () {
-  [ "$DBG" != 'false' ] && echo "DEBUG: $1"
-}
-
 initialize_credentials () {
-  dbg 'Initializing credentials'
+  echo 'Initializing credentials'
   mkdir -p "${HOME}/.ssh" "${HOME}/.sshd"
   if [ ! -f "${HOME}/.ssh/password" ] ; then
    echo "Password file not found, will generate a new random one."
@@ -29,7 +25,7 @@ initialize_credentials () {
     cat "${HOME}/.ssh/password" | ssh-keygen -q -f "${HOME}/.sshd/ssh_host_rsa_key" -N '' -t rsa
   fi
   if [ ! -f "${HOME}/.sshd/ssh_host_dsa_key" ] ; then
-   echo "Host rsa key file not found, will generate a new one."
+   echo "Host dsa key file not found, will generate a new one."
    cat "${HOME}/.ssh/password" | ssh-keygen -q -f "${HOME}/.sshd/ssh_host_dsa_key" -N '' -t dsa
   fi
   chmod 400 ${HOME}/.ssh/* ${HOME}/.sshd/*
@@ -38,7 +34,6 @@ initialize_credentials () {
 
 update_password () {
   # use passwd and not chpassw since we need to run it as non-sudo
-  dbg "Updating password with $1"
   echo -e "$(cat ${HOME}/def_pwd)\n$1\n$1" | passwd > /dev/null
 
   if [ $? -ne 0 ] ; then
@@ -53,32 +48,38 @@ update_password () {
 #########################
 # Main
 #########################
-
 echo "Starting Managment pod"
-date
-echo "Env:"
-env
-
-echo "Home content:"
-find ~ -ls
-echo "Workdir content"
-find "$WORK_FLD" -ls
-
 test -f "${HOME}/.ssh/password"
 GENERATED_PASSWORD_EXISTS=$?
-echo "Generated password exists: $GENERATED_PASSWORD_EXISTS"
 test -f "${HOME}/def_pwd"
 DEFAULT_PASSWORD_EXISTS=$?
-echo "Default password exists: $DEFAULT_PASSWORD_EXISTS"
+
+
+if [ "$DBG" != 'false' ] ; then 
+  date
+  echo "Env:"
+  env
+
+  echo "Home content:"
+  find ~ -ls
+  echo "Workdir content"
+  find "$WORK_FLD" -ls
+  echo "Generated password exists: $GENERATED_PASSWORD_EXISTS"
+  echo "Default password exists: $DEFAULT_PASSWORD_EXISTS"
+fi
+
+
 
 if [[ -z "${KUBERNETES_SERVICE_HOST}" ]] && [[ "$GENERATED_PASSWORD_EXISTS" -eq 1 ]]; then
-  # Initialize keys for DOCKER
+  # Initialize keys for DOCKER if not already initialized
   # No need for KUBE, secrets provided through secrets
   initialize_credentials
 fi
 
-echo "Home content:"
-find ~ -ls
+if [ "$DBG" != 'false' ] ; then 
+  echo "Home content after credentials initialization:"
+  find ~ -ls
+fi
 
 PASS="$(cat ${HOME}/.ssh/password)"
 
@@ -88,36 +89,49 @@ if [ "$DEFAULT_PASSWORD_EXISTS" -eq 0 ] ; then
   update_password "$PASS"
 fi
 
-echo "Home content:"
-find ~ -ls
+if [ "$DBG" != 'false' ] ; then 
+  echo "Home content after user password update:"
+  find ~ -ls
+fi
 
-echo "Trying running sudo with pass: $PASS"
-set -x
+echo "Verifying if sudo can be run"
 # If can sudo
 if echo "$PASS" | sudo -S -v ; then
-  echo 'Try to own work folder'
+  echo 'Updating work folder permissions'
   echo "$PASS" | sudo -S chown "$USER:$USER" "${WORK_FLD}"
   [ -d "${WORK_FLD}/.kube" ] && echo "$PASS" | sudo -S chown "$USER:$USER" "${WORK_FLD}/.kube"
 else
   echo WARNING: cannot run as privileged user
 fi
-set +x
 
-echo "Home content:"
-find ~ -ls
+if [ "$DBG" != 'false' ] ; then 
+  echo "Home content after permission update"
+  find ~ -ls
+fi
 
 
 # Check we can write into /work
 touch "$WORK_FLD/.canary"
 [ $? -ne 0 ] && echo WARNING: Unable to write on the volume mounted on $WORK_FLD. Manually fix your configurations to ensure the persistence of your artifacts.
 rm -f "$WORK_FLD/.canary"
-set -x
+
 mkdir -p "${WORK_FLD}/.kube"
-[ ! -L "${HOME}/.kube" ] && ln -s "${WORK_FLD}/.kube" "${HOME}/.kube"
-set +x
+if [ ! -L "${HOME}/.kube" ] ; then
+ echo "${HOME}/.kube folder does not exist, linking it to ${WORK_FLD}/.kube "
+ ln -s "${WORK_FLD}/.kube" "${HOME}/.kube"
+fi
+
 echo "Container started" 1>&2
 echo "You can ssh into this container with user 'akamas' and password '$PASS'" 1>&2
-find ~ -ls
+
+
+if [ "$DBG" != 'false' ] ; then 
+  echo "Home content after permission update"
+  find ~ -ls
+  echo "Workdir content"
+  find "$WORK_FLD" -ls
+fi
+
 # Start sshd
 if [ -n "${KUBERNETES_SERVICE_HOST}" ]; then
   # Set k8s startup probe
