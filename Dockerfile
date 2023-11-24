@@ -69,7 +69,7 @@ RUN wget https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jd
 RUN pip3 install --upgrade pip && \
     pip3 install setuptools wheel kubernetes
 
-RUN wget https://github.com/mikefarah/yq/releases/download/v4.35.2/yq_linux_amd64 && \
+RUN wget https://github.com/mikefarah/yq/releases/download/v4.40.3/yq_linux_amd64 && \
     mv yq_linux_amd64 /usr/bin/yq &&\
     chmod +x /usr/bin/yq
 
