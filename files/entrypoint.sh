@@ -3,7 +3,8 @@
 WORK_FLD=/work
 DBG="${DBG:-false}"
 USER="${USER:-$(whoami)}"
-ALLOW_PASSWORD="${ALLOW_PASSWORD:-false)}"
+ALLOW_PASSWORD="${ALLOW_PASSWORD:-false}"
+
 #########################
 # Functions
 #########################
@@ -62,6 +63,7 @@ if [ "$DBG" != 'false' ] ; then
   date
   echo "Env:"
   env
+  echo ALLOW_PASSWORD: $ALLOW_PASSWORD
 
   echo "Home content:"
   find ~ -ls
@@ -70,7 +72,6 @@ if [ "$DBG" != 'false' ] ; then
   echo "Generated password exists: $GENERATED_PASSWORD_EXISTS"
   echo "Default password exists: $DEFAULT_PASSWORD_EXISTS"
 fi
-
 
 
 if [[ -z "${KUBERNETES_SERVICE_HOST}" ]] && [[ "$GENERATED_PASSWORD_EXISTS" -eq 1 ]]; then
@@ -124,19 +125,18 @@ if [ ! -L "${HOME}/.kube" ] ; then
   ln -s "${WORK_FLD}/.kube" "${HOME}/.kube"
 fi
 
-echo "Container started" 1>&2
-if $ALLOW_PASSWORD ; then
-  echo "You can ssh into this container with user 'akamas' using the password '$PASS' or the public key" 1>&2
-else
-  echo "You can ssh into this container with user 'akamas' using the public key" 1>&2
-fi
-
-
 if [ "$DBG" != 'false' ] ; then
   echo "Home content after permission update"
   find ~ -ls
   echo "Workdir content"
   find "$WORK_FLD" -ls
+fi
+
+echo "Container started" 1>&2
+if [ $ALLOW_PASSWORD != 'false' ] ; then
+  echo "You can ssh into this container with user 'akamas' using the password '${PASS}' or the public key" 1>&2
+else
+  echo "You can ssh into this container with user 'akamas' using the public key" 1>&2
 fi
 
 # Start sshd
