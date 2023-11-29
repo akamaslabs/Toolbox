@@ -157,7 +157,9 @@ if [ -n "${KUBERNETES_SERVICE_HOST}" ]; then
 else
   echo "$PASS" | sudo -S /usr/sbin/sshd -D \
     -h "${HOME}/.sshd/ssh_host_rsa_key" \
-    -h "${HOME}/.sshd/ssh_host_dsa_key" -e |& tee -a "${HOME}/sshd.log"
+    -h "${HOME}/.sshd/ssh_host_dsa_key" \
+    -o "PasswordAuthentication $( [ "$ALLOW_PASSWORD" != 'false' ] && echo 'yes' || echo 'no' )" \
+    -e |& tee -a "${HOME}/sshd.log"
 fi
 echo SSHD exited
 sleep 5
