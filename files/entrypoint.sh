@@ -13,8 +13,13 @@ initialize_credentials () {
   echo 'Initializing credentials'
   mkdir -p "${HOME}/.ssh" "${HOME}/.sshd"
   if [ ! -f "${HOME}/.ssh/password" ] ; then
-   echo "Password file not found, will generate a new random one."
-   echo $RANDOM | md5sum | head -c 20 > "${HOME}/.ssh/password"
+    if [ ! -z "${CUSTOM_PASSWORD}" ]; then
+      echo "Password file not found, will store the configured one."
+      echo "${CUSTOM_PASSWORD}" > "${HOME}/.ssh/password"
+    else
+      echo "Password file not found, will generate a new random one."
+      echo $RANDOM | md5sum | head -c 20 > "${HOME}/.ssh/password"
+    fi
   fi
 
   if [ ! -f "${HOME}/.ssh/id_rsa" ] ; then
