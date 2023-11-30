@@ -60,7 +60,7 @@ deploy-kube:
   script:
     - echo "Deploying akamas to cluster $KUBE_CLUSTER"
     - make provisioner target=debug
-    - make build-values
+    - make provisioner target=build-values
     - make provisioner target=deploy-kube
   artifacts:
     exclude:
