@@ -69,9 +69,8 @@ e2e-kube: 		##  Test e2e with kubernetes
 .PHONY: build-values
 build-values:
 	@echo Building Helm values file for the management pod && \
-	yq '.managementPod.image.tag="${VERSION}"' $(VALUES_FILE).tpl | tee $(VALUES_FILE).tpl2 && \
+	yq '.managementPod.image.tag="${VERSION}"' $(VALUES_FILE).tpl > $(VALUES_FILE).tpl2 && \
 	yq '.managementPod.sshPassword.enabled=true' $(VALUES_FILE).tpl2 | tee $(VALUES_FILE) && \
-	cat $(VALUES_FILE) && \
 	rm $(VALUES_FILE).tpl2 
 
 .PHONY: info
