@@ -1,7 +1,5 @@
 managementPod:
   enabled: true
-  sshPassword:
-    enabled: true
 
 airflow: {enabled: false}
 analyzer: {enabled: false}
