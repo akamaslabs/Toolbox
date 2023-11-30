@@ -1,6 +1,7 @@
 variables:
   GIT_SUBMODULE_STRATEGY: normal
   GIT_DEPTH: 5
+  GIT_SUBMODULE_UPDATE_FLAGS: --remote
 
 workflow:
   rules:
