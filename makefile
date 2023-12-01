@@ -18,9 +18,9 @@ IMAGE_NAME := ${AKAMAS_REGISTRY}/akamas/management-container
 
 AWS_DEFAULT_REGION ?= us-east-2
 
-ENV_NAME ?= mgmtpod
+ENV_NAME ?= toolbox
 
-CHART_VERSION := "1.3.0-mgmt"
+CHART_VERSION := "1.3.0-toolbox"
 
 include deploy/makefile
 
@@ -69,9 +69,7 @@ e2e-kube: 		##  Test e2e with kubernetes
 .PHONY: build-values
 build-values:
 	@echo Building Helm values file for the management pod && \
-	yq '.managementPod.image.tag="${VERSION}"' $(VALUES_FILE).tpl > $(VALUES_FILE).tpl2 && \
-	yq '.managementPod.sshPassword.enabled=true' $(VALUES_FILE).tpl2 | tee $(VALUES_FILE) && \
-	rm $(VALUES_FILE).tpl2
+	yq '.toolbox.image.tag="${VERSION}"' $(VALUES_FILE).tpl | tee $(VALUES_FILE)
 
 .PHONY: info
 info: 					## Print some info on the repo
