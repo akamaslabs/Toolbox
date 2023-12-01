@@ -9,6 +9,7 @@ elasticsearch: {replicas: 0}
 initializer: {enabled: false}
 keycloak: {enabled: false}
 kibana: {enabled: false}
+kong: {enabled: false}
 license: {enabled: false}
 log: {enabled: false}
 logstash: {enabled: false}
@@ -20,3 +21,12 @@ system: {enabled: false}
 telemetry: {enabled: false}
 ui: {enabled: false}
 users: {enabled: false}
+postgresql:
+  primary:
+    resources:
+      limits:
+        cpu: "100m"
+        memory: "100Mi"
+      requests:
+        cpu: "100m"
+        memory: "100Mi"
