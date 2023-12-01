@@ -6,9 +6,9 @@ networks:
     driver: bridge
 
 services:
-  management-container:
-    image: 485790562880.dkr.ecr.us-east-2.amazonaws.com/akamas/management-container:${CURR_VERSION}
-    container_name: management-container
+  toolbox:
+    image: 485790562880.dkr.ecr.us-east-2.amazonaws.com/akamas/toolbox:${CURR_VERSION}
+    container_name: toolbox
     environment:
       - BASH_ENV=/home/akamas/.bashrc
     expose:

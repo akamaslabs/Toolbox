@@ -14,4 +14,4 @@ The `/work` directory mounts a dedicated volume that persists across restarts. Y
 
 ## SSH ACCESS
 
-You can connect to this management pod via ssh protocol. The only user enabled for ssh connection is 'akamas'. The password is '#PASSWORD#'.
+You can connect to this toolbox via ssh protocol. The only user enabled for ssh connection is 'akamas'. The password is '#PASSWORD#'.

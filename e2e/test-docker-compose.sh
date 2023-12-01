@@ -4,10 +4,10 @@ docker-compose pull
 docker-compose up -d
 sleep 10
 docker ps
-curr_password=$(docker compose logs management-container | grep -i 'You can ssh into this container' | grep -o "'[^']*'" | sed -n '2p' | tr -d "'\n")
-container_id=$(docker ps | grep management-container | cut -d ' ' -f 1)
+curr_password=$(docker exec toolbox cat /home/akamas/password)
+container_id=$(docker ps | awk '/toolbox/ {print $1}')
 docker cp test-remote-ssh.sh ${container_id}:/tmp/
-docker exec $container_id /tmp/test-remote-ssh.sh "$curr_password" 'management-container'
+docker exec $container_id /tmp/test-remote-ssh.sh "$curr_password" 'toolbox'
 res=$?
 docker-compose down
 if [ $res -eq 0 ]; then

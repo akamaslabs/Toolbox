@@ -3,6 +3,8 @@
 WORK_FLD=/work
 DBG="${DBG:-false}"
 USER="${USER:-$(whoami)}"
+ALLOW_PASSWORD="${ALLOW_PASSWORD:-false}"
+
 #########################
 # Functions
 #########################
@@ -11,15 +13,21 @@ initialize_credentials () {
   echo 'Initializing credentials'
   mkdir -p "${HOME}/.ssh" "${HOME}/.sshd"
   if [ ! -f "${HOME}/.ssh/password" ] ; then
-   echo "Password file not found, will generate a new random one."
-   echo $RANDOM | md5sum | head -c 20 > "${HOME}/.ssh/password"
+    if [ ! -z "${CUSTOM_PASSWORD}" ]; then
+      echo "Password file not found, will store the configured one."
+      echo "${CUSTOM_PASSWORD}" > "${HOME}/.ssh/password"
+    else
+      echo "Password file not found, will generate a new random one."
+      echo $RANDOM | md5sum | head -c 20 > "${HOME}/.ssh/password"
+    fi
   fi
-  if [ ! -f "${HOME}/.ssh/id_rsa" ] ; then 
+
+  if [ ! -f "${HOME}/.ssh/id_rsa" ] ; then
     echo "Private key file not found, will generate a new one."
     ssh-keygen -q -f "${HOME}/.ssh/id_rsa" -N '' -t rsa -b 2048 && \
     cp "${HOME}/.ssh/id_rsa.pub" "${HOME}/.ssh/authorized_keys"
-  fi 
-  
+  fi
+
   if [ ! -f "${HOME}/.sshd/ssh_host_rsa_key" ] ; then
     echo "Host rsa key file not found, will generate a new one."
     cat "${HOME}/.ssh/password" | ssh-keygen -q -f "${HOME}/.sshd/ssh_host_rsa_key" -N '' -t rsa
@@ -28,21 +36,22 @@ initialize_credentials () {
    echo "Host dsa key file not found, will generate a new one."
    cat "${HOME}/.ssh/password" | ssh-keygen -q -f "${HOME}/.sshd/ssh_host_dsa_key" -N '' -t dsa
   fi
+
   chmod 400 ${HOME}/.ssh/* ${HOME}/.sshd/*
   echo "Credentials initialized"
 }
 
 update_password () {
   # use passwd and not chpassw since we need to run it as non-sudo
-  echo -e "$(cat ${HOME}/def_pwd)\n$1\n$1" | passwd > /dev/null
+  echo -e "$(cat ${HOME}/.factory_password)\n${PASS}\n${PASS}" | passwd > /dev/null
 
   if [ $? -ne 0 ] ; then
-    echo "ERROR: unable to update ${USER} password"
-    exit 1
+    echo "ERROR: unable to update the password for user ${USER}. Keeping the default one."
+    PASS=$(cat ${HOME}/.factory_password)
   else
     echo Updated $USER user password
+    rm -f "${HOME}/.factory_password"
   fi
-  rm -f "${HOME}/def_pwd"
 }
 
 #########################
@@ -51,14 +60,15 @@ update_password () {
 echo "Starting Managment pod"
 test -f "${HOME}/.ssh/password"
 GENERATED_PASSWORD_EXISTS=$?
-test -f "${HOME}/def_pwd"
+test -f "${HOME}/.factory_password"
 DEFAULT_PASSWORD_EXISTS=$?
 
 
-if [ "$DBG" != 'false' ] ; then 
+if [ "$DBG" != 'false' ] ; then
   date
   echo "Env:"
   env
+  echo ALLOW_PASSWORD: $ALLOW_PASSWORD
 
   echo "Home content:"
   find ~ -ls
@@ -69,14 +79,13 @@ if [ "$DBG" != 'false' ] ; then
 fi
 
 
-
 if [[ -z "${KUBERNETES_SERVICE_HOST}" ]] && [[ "$GENERATED_PASSWORD_EXISTS" -eq 1 ]]; then
   # Initialize keys for DOCKER if not already initialized
   # No need for KUBE, secrets provided through secrets
   initialize_credentials
 fi
 
-if [ "$DBG" != 'false' ] ; then 
+if [ "$DBG" != 'false' ] ; then
   echo "Home content after credentials initialization:"
   find ~ -ls
 fi
@@ -89,7 +98,7 @@ if [ "$DEFAULT_PASSWORD_EXISTS" -eq 0 ] ; then
   update_password "$PASS"
 fi
 
-if [ "$DBG" != 'false' ] ; then 
+if [ "$DBG" != 'false' ] ; then
   echo "Home content after user password update:"
   find ~ -ls
 fi
@@ -104,7 +113,7 @@ else
   echo WARNING: cannot run as privileged user
 fi
 
-if [ "$DBG" != 'false' ] ; then 
+if [ "$DBG" != 'false' ] ; then
   echo "Home content after permission update"
   find ~ -ls
 fi
@@ -117,19 +126,21 @@ rm -f "$WORK_FLD/.canary"
 
 mkdir -p "${WORK_FLD}/.kube"
 if [ ! -L "${HOME}/.kube" ] ; then
- echo "${HOME}/.kube folder does not exist, linking it to ${WORK_FLD}/.kube "
- ln -s "${WORK_FLD}/.kube" "${HOME}/.kube"
+  echo "${HOME}/.kube folder does not exist, linking it to ${WORK_FLD}/.kube "
+  ln -s "${WORK_FLD}/.kube" "${HOME}/.kube"
+fi
+
+if [ "$DBG" != 'false' ] ; then
+  echo "Workdir content"
+  find "$WORK_FLD" -ls
 fi
 
 echo "Container started" 1>&2
-echo "You can ssh into this container with user 'akamas' and password '$PASS'" 1>&2
-
-
-if [ "$DBG" != 'false' ] ; then 
-  echo "Home content after permission update"
-  find ~ -ls
-  echo "Workdir content"
-  find "$WORK_FLD" -ls
+echo "$PASS" > "${HOME}/password"
+if [ $ALLOW_PASSWORD != 'false' ] ; then
+  echo "You can ssh into this container with user 'akamas' using the password '${PASS}' or the public key" 1>&2
+else
+  echo "You can ssh into this container with user 'akamas' using the public key" 1>&2
 fi
 
 # Start sshd
@@ -139,11 +150,15 @@ if [ -n "${KUBERNETES_SERVICE_HOST}" ]; then
   /usr/sbin/sshd -p 2222 -D \
     -h "${HOME}/.sshd/ssh_host_rsa_key" \
     -h "${HOME}/.sshd/ssh_host_dsa_key" \
-    -o "PidFile ${HOME}/.sshd/sshd.pid" -e |& tee -a "${HOME}/sshd.log"
+    -o "PidFile ${HOME}/.sshd/sshd.pid" \
+    -o "PasswordAuthentication $( [ "$ALLOW_PASSWORD" != 'false' ] && echo 'yes' || echo 'no' )" \
+    -e |& tee -a "${HOME}/sshd.log"
 else
   echo "$PASS" | sudo -S /usr/sbin/sshd -D \
     -h "${HOME}/.sshd/ssh_host_rsa_key" \
-    -h "${HOME}/.sshd/ssh_host_dsa_key" -e |& tee -a "${HOME}/sshd.log"
+    -h "${HOME}/.sshd/ssh_host_dsa_key" \
+    -o "PasswordAuthentication $( [ "$ALLOW_PASSWORD" != 'false' ] && echo 'yes' || echo 'no' )" \
+    -e |& tee -a "${HOME}/sshd.log"
 fi
 echo SSHD exited
 sleep 5
