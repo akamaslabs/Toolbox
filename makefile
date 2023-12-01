@@ -14,13 +14,13 @@ current_tag=$(shell git tag --points-at HEAD)
 
 VERSION ?= $(version)
 AKAMAS_REGISTRY := 485790562880.dkr.ecr.us-east-2.amazonaws.com
-IMAGE_NAME := ${AKAMAS_REGISTRY}/akamas/management-container
+IMAGE_NAME := ${AKAMAS_REGISTRY}/akamas/toolbox
 
 AWS_DEFAULT_REGION ?= us-east-2
 
 ENV_NAME ?= toolbox
 
-CHART_VERSION := "1.3.0-toolbox"
+CHART_VERSION := "1.3.0-dev"
 
 include deploy/makefile
 
@@ -68,7 +68,7 @@ e2e-kube: 		##  Test e2e with kubernetes
 
 .PHONY: build-values
 build-values:
-	@echo Building Helm values file for the management pod && \
+	@echo Building Helm values file for the toolbox && \
 	yq '.toolbox.image.tag="${VERSION}"' $(VALUES_FILE).tpl | tee $(VALUES_FILE)
 
 .PHONY: info
