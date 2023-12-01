@@ -107,8 +107,8 @@ RUN mkdir -p /home/${BUILD_USER}/.ssh /home/${BUILD_USER}/.sshd /work/.kube
 # On boot we'll need to update the password with a randomly-generated one. Since
 # in kube envs we may not be able to `sudo`, and passwd doesn't work well without
 # a password, we need to setup a default one
-RUN echo 'password' > /home/${BUILD_USER}/def_pwd && \
-    echo "${BUILD_USER}:$(cat /home/${BUILD_USER}/def_pwd)" | chpasswd
+RUN echo 'akamas' > /home/${BUILD_USER}/.factory_password && \
+    echo "${BUILD_USER}:$(cat /home/${BUILD_USER}/.factory_password)" | chpasswd
 RUN chown -R ${BUILD_USER}:${BUILD_USER} /home/${BUILD_USER} /work/
 ADD files/entrypoint.sh /
 RUN chmod +x /entrypoint.sh

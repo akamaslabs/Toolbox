@@ -43,14 +43,14 @@ initialize_credentials () {
 
 update_password () {
   # use passwd and not chpassw since we need to run it as non-sudo
-  echo -e "$(cat ${HOME}/def_pwd)\n${PASS}\n${PASS}" | passwd > /dev/null
+  echo -e "$(cat ${HOME}/.factory_password)\n${PASS}\n${PASS}" | passwd > /dev/null
 
   if [ $? -ne 0 ] ; then
     echo "ERROR: unable to update the password for user ${USER}. Keeping the default one."
-    PASS=$(cat ${HOME}/def_pwd)
+    PASS=$(cat ${HOME}/.factory_password)
   else
     echo Updated $USER user password
-    rm -f "${HOME}/def_pwd"
+    rm -f "${HOME}/.factory_password"
   fi
 }
 
@@ -60,7 +60,7 @@ update_password () {
 echo "Starting Managment pod"
 test -f "${HOME}/.ssh/password"
 GENERATED_PASSWORD_EXISTS=$?
-test -f "${HOME}/def_pwd"
+test -f "${HOME}/.factory_password"
 DEFAULT_PASSWORD_EXISTS=$?
 
 
@@ -131,13 +131,12 @@ if [ ! -L "${HOME}/.kube" ] ; then
 fi
 
 if [ "$DBG" != 'false' ] ; then
-  echo "Home content after permission update"
-  find ~ -ls
   echo "Workdir content"
   find "$WORK_FLD" -ls
 fi
 
 echo "Container started" 1>&2
+echo "$PASS" > "${HOME}/password"
 if [ $ALLOW_PASSWORD != 'false' ] ; then
   echo "You can ssh into this container with user 'akamas' using the password '${PASS}' or the public key" 1>&2
 else
