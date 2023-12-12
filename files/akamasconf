@@ -1,4 +1,3 @@
 apiAddress: http://kong:8000
-organization: akamas
 verifySsl: false
 workspace: default
