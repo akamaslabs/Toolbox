@@ -68,7 +68,7 @@ RUN wget -q https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download
 RUN pip3 install --progress-bar off --upgrade pip && \
     pip3 install --progress-bar off setuptools wheel kubernetes
 
-RUN wget -q https://github.com/mikefarah/yq/releases/download/v4.40.3/yq_linux_amd64 && \
+RUN wget -q https://github.com/mikefarah/yq/releases/download/v4.40.5/yq_linux_amd64 && \
     mv yq_linux_amd64 /usr/bin/yq &&\
     chmod +x /usr/bin/yq
 
@@ -76,7 +76,7 @@ RUN curl -sS https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
 
 RUN curl -sS -LO "https://dl.k8s.io/release/v1.23.16/bin/linux/amd64/kubectl" && install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
 
-RUN wget -q https://github.com/derailed/k9s/releases/download/v0.27.4/k9s_Linux_amd64.tar.gz && tar xfz k9s_Linux_amd64.tar.gz -C /usr/local/bin/ && \
+RUN wget -q https://github.com/derailed/k9s/releases/download/v0.29.1/k9s_Linux_amd64.tar.gz && tar xfz k9s_Linux_amd64.tar.gz -C /usr/local/bin/ && \
     chmod 755 /usr/local/bin/k9s && rm -f k9s_Linux_amd64.tar.gz
 
 RUN curl -sS "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && \
