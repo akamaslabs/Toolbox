@@ -88,11 +88,11 @@ RUN echo "export PATH=/opt/java/bin:$PATH\n" \
          "export KUBECONFIG=/work/.kube/config\n" \
          "alias k=kubectl" >> /home/${BUILD_USER}/.bashrc
 
-RUN curl -sS -o akamas_cli https://s3.us-east-2.amazonaws.com/akamas/cli/$(curl -sS https://s3.us-east-2.amazonaws.com/akamas/cli/stable.txt)/linux_64/akamas && \
+RUN curl -sS -o akamas_cli https://s3.us-east-2.amazonaws.com/akamas/cli/2.9.0/linux_64/akamas && \
     mv akamas_cli /usr/local/bin/akamas && \
     chmod 755 /usr/local/bin/akamas
 
-RUN curl -sS -O https://s3.us-east-2.amazonaws.com/akamas/cli/$(curl -sS https://s3.us-east-2.amazonaws.com/akamas/cli/stable.txt)/linux_64/akamas_autocomplete.sh && \
+RUN curl -sS -O https://s3.us-east-2.amazonaws.com/akamas/cli/2.9.0/linux_64/akamas_autocomplete.sh && \
     mkdir -p /home/${BUILD_USER}/.akamas && \
     mv akamas_autocomplete.sh /home/${BUILD_USER}/.akamas && \
     chmod 755 /home/${BUILD_USER}/.akamas/akamas_autocomplete.sh && \
