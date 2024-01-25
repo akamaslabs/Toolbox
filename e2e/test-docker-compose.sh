@@ -16,4 +16,3 @@ else
 	echo "Docker-compose Test FAILED"
 	exit 1
 fi
-
