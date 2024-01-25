@@ -5,7 +5,7 @@ DBG="${DBG:-false}"
 USER="${USER:-$(whoami)}"
 ALLOW_PASSWORD="${ALLOW_PASSWORD:-false}"
 USE_PAM="${USE_PAM:-yes}"
-
+DEBUG_LEVEL=${DEBUG_LEVEL:0}
 
 #########################
 # Functions
@@ -145,11 +145,27 @@ else
   echo "You can ssh into this container with user 'akamas' using the public key" 1>&2
 fi
 
+case $DEBUG_LEVEL in
+  1)
+    DEBUG_LEVEL='-d'
+    ;;
+  2)
+    DEBUG_LEVEL='-dd'
+    ;;
+  3)
+    DEBUG_LEVEL='-ddd'
+    ;;
+  *)
+    DEBUG_LEVEL=''
+    ;;
+esac
+
+
 # Start sshd
 if [ -n "${KUBERNETES_SERVICE_HOST}" ]; then
   # Set k8s startup probe
   echo started > /tmp/healthcheck
-  /usr/sbin/sshd -p 2222 -D \
+  /usr/sbin/sshd ${DEBUG_LEVEL} -p 2222 -D \
     -h "${HOME}/.sshd/ssh_host_rsa_key" \
     -h "${HOME}/.sshd/ssh_host_dsa_key" \
     -o "PidFile ${HOME}/.sshd/sshd.pid" \
@@ -157,7 +173,7 @@ if [ -n "${KUBERNETES_SERVICE_HOST}" ]; then
     -o "PasswordAuthentication $( [ "$ALLOW_PASSWORD" != 'false' ] && echo 'yes' || echo 'no' )" \
     -e |& tee -a "${HOME}/sshd.log"
 else
-  echo "$PASS" | sudo -S /usr/sbin/sshd -D \
+  echo "$PASS" | sudo -S /usr/sbin/sshd ${DEBUG_LEVEL} -D \
     -h "${HOME}/.sshd/ssh_host_rsa_key" \
     -h "${HOME}/.sshd/ssh_host_dsa_key" \
     -o "UsePAM ${USE_PAM}" \
