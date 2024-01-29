@@ -4,9 +4,7 @@ ENV BUILD_USER_ID=199
 ENV BUILD_USER=akamas
 ARG DOCKER_GROUP_ID=200
 
-SHELL ["/bin/bash", "-o", "pipefail", "-c"]
-
-RUN apt-get update &&\
+RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     apt-transport-https \
     build-essential \
@@ -42,14 +40,14 @@ RUN apt-get update &&\
 RUN ln -s /usr/bin/python3 /usr/bin/python
 
 #Setup docker repo
-RUN  mkdir -p /etc/apt/keyrings &&\
+RUN  mkdir -p /etc/apt/keyrings && \
      curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg && \
      echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
   $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null
 
 #Install docker
-RUN apt-get update &&\
-    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends\
+RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     docker-ce \
     docker-ce-cli \
     containerd.io \
@@ -71,14 +69,17 @@ RUN wget -q https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download
 RUN pip3 install --progress-bar off --no-cache-dir --upgrade pip && \
     pip3 install --progress-bar off --no-cache-dir setuptools wheel kubernetes
 
+# link releases: https://github.com/mikefarah/yq/releases
 RUN wget -q https://github.com/mikefarah/yq/releases/download/v4.40.5/yq_linux_amd64 && \
-    mv yq_linux_amd64 /usr/bin/yq &&\
+    mv yq_linux_amd64 /usr/bin/yq && \
     chmod +x /usr/bin/yq
 
 RUN curl -sS https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 
+# link releases: https://kubernetes.io/releases/
 RUN curl -sS -LO "https://dl.k8s.io/release/v1.26.13/bin/linux/amd64/kubectl" && install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
 
+# link releases: https://github.com/derailed/k9s/releases
 RUN wget -q https://github.com/derailed/k9s/releases/download/v0.31.7/k9s_Linux_amd64.tar.gz && tar xfz k9s_Linux_amd64.tar.gz -C /usr/local/bin/ && \
     chmod 755 /usr/local/bin/k9s && rm -f k9s_Linux_amd64.tar.gz
 
@@ -94,7 +95,7 @@ RUN echo "export PATH=/opt/java/bin:$PATH\n" \
 RUN curl -sS -o akamas_cli https://s3.us-east-2.amazonaws.com/akamas/cli/2.9.0/linux_64/akamas && \
     mv akamas_cli /usr/local/bin/akamas && \
     chmod 755 /usr/local/bin/akamas && \
-    \
+\
     curl -sS -O https://s3.us-east-2.amazonaws.com/akamas/cli/2.9.0/linux_64/akamas_autocomplete.sh && \
     mkdir -p /home/${BUILD_USER}/.akamas && \
     mv akamas_autocomplete.sh /home/${BUILD_USER}/.akamas && \
