@@ -4,6 +4,8 @@ WORK_FLD=/work
 DBG="${DBG:-false}"
 USER="${USER:-$(whoami)}"
 ALLOW_PASSWORD="${ALLOW_PASSWORD:-false}"
+USE_PAM="${USE_PAM:-yes}"
+DEBUG_LEVEL=${DEBUG_LEVEL:0}
 
 #########################
 # Functions
@@ -37,19 +39,19 @@ initialize_credentials () {
    cat "${HOME}/.ssh/password" | ssh-keygen -q -f "${HOME}/.sshd/ssh_host_dsa_key" -N '' -t dsa
   fi
 
-  chmod 400 ${HOME}/.ssh/* ${HOME}/.sshd/*
+  chmod 400 "${HOME}"/.ssh/* "${HOME}"/.sshd/*
   echo "Credentials initialized"
 }
 
 update_password () {
   # use passwd and not chpassw since we need to run it as non-sudo
-  echo -e "$(cat ${HOME}/.factory_password)\n${PASS}\n${PASS}" | passwd > /dev/null
+  echo -e "$(cat "${HOME}/.factory_password")\n${PASS}\n${PASS}" | passwd > /dev/null
 
-  if [ $? -ne 0 ] ; then
+  if [ "$?" -ne 0 ] ; then
     echo "ERROR: unable to update the password for user ${USER}. Keeping the default one."
-    PASS=$(cat ${HOME}/.factory_password)
+    PASS=$(cat "${HOME}/.factory_password")
   else
-    echo Updated $USER user password
+    echo "Updated $USER user password"
     rm -f "${HOME}/.factory_password"
   fi
 }
@@ -68,7 +70,7 @@ if [ "$DBG" != 'false' ] ; then
   date
   echo "Env:"
   env
-  echo ALLOW_PASSWORD: $ALLOW_PASSWORD
+  echo "ALLOW_PASSWORD: $ALLOW_PASSWORD"
 
   echo "Home content:"
   find ~ -ls
@@ -90,7 +92,7 @@ if [ "$DBG" != 'false' ] ; then
   find ~ -ls
 fi
 
-PASS="$(cat ${HOME}/.ssh/password)"
+PASS="$(cat "${HOME}/.ssh/password")"
 
 if [ "$DEFAULT_PASSWORD_EXISTS" -eq 0 ] ; then
   echo 'Default password found, updating it.'
@@ -121,7 +123,7 @@ fi
 
 # Check we can write into /work
 touch "$WORK_FLD/.canary"
-[ $? -ne 0 ] && echo WARNING: Unable to write on the volume mounted on $WORK_FLD. Manually fix your configurations to ensure the persistence of your artifacts.
+[ "$?" -ne 0 ] && echo WARNING: Unable to write on the volume mounted on $WORK_FLD. Manually fix your configurations to ensure the persistence of your artifacts.
 rm -f "$WORK_FLD/.canary"
 
 mkdir -p "${WORK_FLD}/.kube"
@@ -137,28 +139,46 @@ fi
 
 echo "Container started" 1>&2
 echo "$PASS" > "${HOME}/password"
-if [ $ALLOW_PASSWORD != 'false' ] ; then
+if [ "$ALLOW_PASSWORD" != 'false' ] ; then
   echo "You can ssh into this container with user 'akamas' using the password '${PASS}' or the public key" 1>&2
 else
   echo "You can ssh into this container with user 'akamas' using the public key" 1>&2
 fi
 
+case $DEBUG_LEVEL in
+  1)
+    DEBUG_LEVEL='-d'
+    ;;
+  2)
+    DEBUG_LEVEL='-dd'
+    ;;
+  3)
+    DEBUG_LEVEL='-ddd'
+    ;;
+  *)
+    DEBUG_LEVEL=''
+    ;;
+esac
+
+
 # Start sshd
 if [ -n "${KUBERNETES_SERVICE_HOST}" ]; then
   # Set k8s startup probe
   echo started > /tmp/healthcheck
-  /usr/sbin/sshd -p 2222 -D \
+  /usr/sbin/sshd ${DEBUG_LEVEL} -p 2222 -D \
     -h "${HOME}/.sshd/ssh_host_rsa_key" \
     -h "${HOME}/.sshd/ssh_host_dsa_key" \
     -o "PidFile ${HOME}/.sshd/sshd.pid" \
+    -o "UsePAM ${USE_PAM}" \
     -o "PasswordAuthentication $( [ "$ALLOW_PASSWORD" != 'false' ] && echo 'yes' || echo 'no' )" \
     -e |& tee -a "${HOME}/sshd.log"
 else
-  echo "$PASS" | sudo -S /usr/sbin/sshd -D \
+  echo "$PASS" | sudo -S /usr/sbin/sshd ${DEBUG_LEVEL} -D \
     -h "${HOME}/.sshd/ssh_host_rsa_key" \
     -h "${HOME}/.sshd/ssh_host_dsa_key" \
+    -o "UsePAM ${USE_PAM}" \
     -o "PasswordAuthentication $( [ "$ALLOW_PASSWORD" != 'false' ] && echo 'yes' || echo 'no' )" \
     -e |& tee -a "${HOME}/sshd.log"
 fi
-echo SSHD exited
+echo "SSHD exited"
 sleep 5
