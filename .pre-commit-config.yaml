@@ -20,12 +20,14 @@ repos:
       # - id: requirements-txt-fixer
       - id: trailing-whitespace
 
+  ### Bash
   - repo: https://github.com/syntaqx/git-hooks
     rev: v0.0.18
     hooks:
     - id: shellcheck
     - id: shfmt
 
+  ### Docker
   - repo: https://github.com/hadolint/hadolint
     rev: v2.12.0
     hooks:
