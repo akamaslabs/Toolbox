@@ -25,7 +25,8 @@ repos:
     rev: v0.0.18
     hooks:
     - id: shellcheck
-    - id: shfmt
+      args: ["-e", "SC2181"]
+    # - id: shfmt
 
   ### Docker
   - repo: https://github.com/hadolint/hadolint

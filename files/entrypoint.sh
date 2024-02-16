@@ -15,7 +15,7 @@ initialize_credentials () {
   echo 'Initializing credentials'
   mkdir -p "${HOME}/.ssh" "${HOME}/.sshd"
   if [ ! -f "${HOME}/.ssh/password" ] ; then
-    if [ ! -z "${CUSTOM_PASSWORD}" ]; then
+    if [ -n "${CUSTOM_PASSWORD}" ]; then
       echo "Password file not found, will store the configured one."
       echo "${CUSTOM_PASSWORD}" > "${HOME}/.ssh/password"
     else
@@ -32,11 +32,11 @@ initialize_credentials () {
 
   if [ ! -f "${HOME}/.sshd/ssh_host_rsa_key" ] ; then
     echo "Host rsa key file not found, will generate a new one."
-    cat "${HOME}/.ssh/password" | ssh-keygen -q -f "${HOME}/.sshd/ssh_host_rsa_key" -N '' -t rsa
+    ssh-keygen -q -f "${HOME}/.sshd/ssh_host_rsa_key" -N '' -t rsa
   fi
   if [ ! -f "${HOME}/.sshd/ssh_host_dsa_key" ] ; then
    echo "Host dsa key file not found, will generate a new one."
-   cat "${HOME}/.ssh/password" | ssh-keygen -q -f "${HOME}/.sshd/ssh_host_dsa_key" -N '' -t dsa
+   ssh-keygen -q -f "${HOME}/.sshd/ssh_host_dsa_key" -N '' -t dsa
   fi
 
   chmod 400 "${HOME}"/.ssh/* "${HOME}"/.sshd/*
@@ -165,7 +165,7 @@ esac
 if [ -n "${KUBERNETES_SERVICE_HOST}" ]; then
   # Set k8s startup probe
   echo started > /tmp/healthcheck
-  /usr/sbin/sshd ${DEBUG_LEVEL} -p 2222 -D \
+  /usr/sbin/sshd "${DEBUG_LEVEL}" -p 2222 -D \
     -h "${HOME}/.sshd/ssh_host_rsa_key" \
     -h "${HOME}/.sshd/ssh_host_dsa_key" \
     -o "PidFile ${HOME}/.sshd/sshd.pid" \
@@ -173,7 +173,7 @@ if [ -n "${KUBERNETES_SERVICE_HOST}" ]; then
     -o "PasswordAuthentication $( [ "$ALLOW_PASSWORD" != 'false' ] && echo 'yes' || echo 'no' )" \
     -e |& tee -a "${HOME}/sshd.log"
 else
-  echo "$PASS" | sudo -S /usr/sbin/sshd ${DEBUG_LEVEL} -D \
+  echo "$PASS" | sudo -S /usr/sbin/sshd "${DEBUG_LEVEL}" -D \
     -h "${HOME}/.sshd/ssh_host_rsa_key" \
     -h "${HOME}/.sshd/ssh_host_dsa_key" \
     -o "UsePAM ${USE_PAM}" \
