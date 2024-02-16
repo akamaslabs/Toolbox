@@ -1,5 +1,7 @@
 FROM ubuntu:22.04
 
+SHELL ["/bin/bash", "-c"]
+
 ENV BUILD_USER_ID=199
 ENV BUILD_USER=akamas
 ARG DOCKER_GROUP_ID=200
@@ -63,14 +65,16 @@ ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8
 
-RUN wget -q https://github.com/AdoptOpenJDK/openjdk11-binaries/releases/download/jdk-11.0.10%2B9/OpenJDK11U-jdk_x64_linux_hotspot_11.0.10_9.tar.gz -O /opt/OpenJDK11U-jdk_x64_linux_hotspot_11.0.10_9.tar.gz && \
-    cd /opt && tar xzf OpenJDK11U-jdk_x64_linux_hotspot_11.0.10_9.tar.gz && rm /opt/OpenJDK11U-jdk_x64_linux_hotspot_11.0.10_9.tar.gz && mv /opt/jdk-11.0.10+9/ /opt/jdk-11.0.10_9/ && ln -s /opt/jdk-11.0.10_9/ /opt/java
+ARG JAVA_VERSION=17.0.10+7
+RUN wget -q "https://github.com/adoptium/temurin17-binaries/releases/download/jdk-${JAVA_VERSION/+/%2B}/OpenJDK17U-jdk_x64_linux_hotspot_${JAVA_VERSION/+/_}.tar.gz" -O /opt/OpenJDK.tar.gz && \
+    tar xzf /opt/OpenJDK.tar.gz -C /opt/ && rm /opt/OpenJDK.tar.gz && \
+    mv "/opt/jdk-${JAVA_VERSION}" "/opt/jdk-${JAVA_VERSION/+/_}/" && ln -s "/opt/jdk-${JAVA_VERSION/+/_}/" /opt/java
 
 RUN pip3 install --progress-bar off --no-cache-dir --upgrade pip && \
     pip3 install --progress-bar off --no-cache-dir setuptools wheel kubernetes
 
 # link releases: https://github.com/mikefarah/yq/releases
-RUN wget -q https://github.com/mikefarah/yq/releases/download/v4.40.5/yq_linux_amd64 && \
+RUN wget -q https://github.com/mikefarah/yq/releases/download/v4.41.1/yq_linux_amd64 && \
     mv yq_linux_amd64 /usr/bin/yq && \
     chmod +x /usr/bin/yq
 
