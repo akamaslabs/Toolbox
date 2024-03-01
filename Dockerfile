@@ -106,7 +106,7 @@ RUN curl -sS -o akamas_cli https://s3.us-east-2.amazonaws.com/akamas/cli/2.9.0/l
     chown ${BUILD_USER}:${BUILD_USER} /home/${BUILD_USER}/.akamas/akamas_autocomplete.sh && \
     echo "" >> /home/${BUILD_USER}/.bashrc && \
     echo ". /home/${BUILD_USER}/.akamas/akamas_autocomplete.sh" >> /home/${BUILD_USER}/.bashrc && \
-    echo "cd /work" "${BUILD_USER}" >> /home/${BUILD_USER}/.bashrc
+    echo "cd /work" >> /home/${BUILD_USER}/.bashrc
 
 COPY --chown=${BUILD_USER}:${BUILD_USER} files/akamasconf /home/${BUILD_USER}/.akamas/
 
