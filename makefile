@@ -69,7 +69,7 @@ e2e-kube: 		##  Test e2e with kubernetes
 .PHONY: build-values
 build-values:
 	@echo Building Helm values file for the toolbox && \
-	yq '.toolbox.image.tag="${VERSION}"' $(VALUES_FILE).tpl | tee $(FINAL_VALUES_FILE)
+	yq '.toolbox.image.tag="${VERSION}"' $(VALUES_FILE).tpl | tee $(VALUES_FILE)
 
 .PHONY: info
 info: 					## Print some info on the repo
