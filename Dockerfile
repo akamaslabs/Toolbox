@@ -81,7 +81,7 @@ RUN curl -sS https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
 RUN curl -sS -LO "https://dl.k8s.io/release/v1.26.13/bin/linux/amd64/kubectl" && install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
 
 # link releases: https://github.com/derailed/k9s/releases
-RUN wget -q https://github.com/derailed/k9s/releases/download/v0.31.9/k9s_Linux_amd64.tar.gz && \
+RUN wget -q https://github.com/derailed/k9s/releases/download/v0.32.4/k9s_Linux_amd64.tar.gz && \
     tar xfz k9s_Linux_amd64.tar.gz -C /usr/local/bin/ && rm -f k9s_Linux_amd64.tar.gz && \
     chmod 755 /usr/local/bin/k9s
 
