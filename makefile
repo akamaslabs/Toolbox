@@ -20,7 +20,7 @@ AWS_DEFAULT_REGION ?= us-east-2
 
 ENV_NAME ?= toolbox
 
-CHART_VERSION := "1.5.0-dev"
+CHART_VERSION := "1.5.2"
 
 include deploy/makefile
 
