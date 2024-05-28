@@ -81,7 +81,7 @@ RUN curl -sS https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
 RUN curl -sS -LO "https://dl.k8s.io/release/v1.26.13/bin/linux/amd64/kubectl" && install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
 
 # link releases: https://github.com/derailed/k9s/releases
-RUN wget -q https://github.com/derailed/k9s/releases/download/v0.31.9/k9s_Linux_amd64.tar.gz && \
+RUN wget -q https://github.com/derailed/k9s/releases/download/v0.32.4/k9s_Linux_amd64.tar.gz && \
     tar xfz k9s_Linux_amd64.tar.gz -C /usr/local/bin/ && rm -f k9s_Linux_amd64.tar.gz && \
     chmod 755 /usr/local/bin/k9s
 
@@ -106,7 +106,7 @@ RUN curl -sS -o akamas_cli https://s3.us-east-2.amazonaws.com/akamas/cli/2.9.0/l
     chown ${BUILD_USER}:${BUILD_USER} /home/${BUILD_USER}/.akamas/akamas_autocomplete.sh && \
     echo "" >> /home/${BUILD_USER}/.bashrc && \
     echo ". /home/${BUILD_USER}/.akamas/akamas_autocomplete.sh" >> /home/${BUILD_USER}/.bashrc && \
-    echo "cd /work" "${BUILD_USER}" >> /home/${BUILD_USER}/.bashrc
+    echo "cd /work" >> /home/${BUILD_USER}/.bashrc
 
 COPY --chown=${BUILD_USER}:${BUILD_USER} files/akamasconf /home/${BUILD_USER}/.akamas/
 
