@@ -2,6 +2,8 @@ toolbox:
   enabled: true
   sshPassword:
     enabled: true
+  persistence:
+    storageClass: gp3
 
 airflow: {enabled: false}
 analyzer: {enabled: false}
@@ -23,6 +25,7 @@ system: {enabled: false}
 telemetry: {enabled: false}
 ui: {enabled: false}
 users: {enabled: false}
+
 postgresql:
   primary:
     resources:

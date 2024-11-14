@@ -62,7 +62,13 @@ ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8
 
-ARG JAVA_VERSION=17.0.10+7
+ARG JAVA_VERSION=17.0.11+9      # link releases: https://adoptium.net/temurin/archive/?version=17
+ARG YQ_VERSION=4.44.2           # link releases: https://github.com/mikefarah/yq/releases
+ARG KUBECLT_VERSION=1.29.6      # link releases: https://kubernetes.io/releases/
+ARG K9S_VERSION=0.32.5          # link releases: https://github.com/derailed/k9s/releases
+
+ARG AKAMASCLI_VERSION=2.9.0
+
 RUN wget -q "https://github.com/adoptium/temurin17-binaries/releases/download/jdk-${JAVA_VERSION/+/%2B}/OpenJDK17U-jdk_x64_linux_hotspot_${JAVA_VERSION/+/_}.tar.gz" -O /opt/OpenJDK.tar.gz && \
     tar xzf /opt/OpenJDK.tar.gz -C /opt/ && rm /opt/OpenJDK.tar.gz && \
     mv "/opt/jdk-${JAVA_VERSION}" "/opt/jdk-${JAVA_VERSION/+/_}/" && ln -s "/opt/jdk-${JAVA_VERSION/+/_}/" /opt/java
@@ -70,18 +76,15 @@ RUN wget -q "https://github.com/adoptium/temurin17-binaries/releases/download/jd
 RUN pip3 install --progress-bar off --no-cache-dir --upgrade pip && \
     pip3 install --progress-bar off --no-cache-dir setuptools wheel kubernetes
 
-# link releases: https://github.com/mikefarah/yq/releases
-RUN wget -q https://github.com/mikefarah/yq/releases/download/v4.41.1/yq_linux_amd64 && \
+RUN wget -q "https://github.com/mikefarah/yq/releases/download/v${YQ_VERSION}/yq_linux_amd64" && \
     mv yq_linux_amd64 /usr/bin/yq && \
     chmod +x /usr/bin/yq
 
 RUN curl -sS https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 
-# link releases: https://kubernetes.io/releases/
-RUN curl -sS -LO "https://dl.k8s.io/release/v1.26.13/bin/linux/amd64/kubectl" && install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+RUN curl -sS -LO "https://dl.k8s.io/release/v${KUBECLT_VERSION}/bin/linux/amd64/kubectl" && install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
 
-# link releases: https://github.com/derailed/k9s/releases
-RUN wget -q https://github.com/derailed/k9s/releases/download/v0.32.4/k9s_Linux_amd64.tar.gz && \
+RUN wget -q "https://github.com/derailed/k9s/releases/download/v${K9S_VERSION}/k9s_Linux_amd64.tar.gz" && \
     tar xfz k9s_Linux_amd64.tar.gz -C /usr/local/bin/ && rm -f k9s_Linux_amd64.tar.gz && \
     chmod 755 /usr/local/bin/k9s
 
@@ -95,11 +98,11 @@ RUN echo "${BUILD_USER} ALL=(ALL:ALL) NOPASSWD: ALL" >> /etc/sudoers && \
     echo "export KUBECONFIG=/work/.kube/config" >> /home/${BUILD_USER}/.bashrc && \
     echo "alias k=kubectl" >> /home/${BUILD_USER}/.bashrc
 
-RUN curl -sS -o akamas_cli https://s3.us-east-2.amazonaws.com/akamas/cli/2.9.0/linux_64/akamas && \
+RUN curl -sS -o akamas_cli "https://s3.us-east-2.amazonaws.com/akamas/cli/${AKAMASCLI_VERSION}/linux_64/akamas" && \
     mv akamas_cli /usr/local/bin/akamas && \
     chmod 755 /usr/local/bin/akamas && \
 \
-    curl -sS -O https://s3.us-east-2.amazonaws.com/akamas/cli/2.9.0/linux_64/akamas_autocomplete.sh && \
+    curl -sS -O "https://s3.us-east-2.amazonaws.com/akamas/cli/${AKAMASCLI_VERSION}/linux_64/akamas_autocomplete.sh" && \
     mkdir -p /home/${BUILD_USER}/.akamas && \
     mv akamas_autocomplete.sh /home/${BUILD_USER}/.akamas && \
     chmod 755 /home/${BUILD_USER}/.akamas/akamas_autocomplete.sh && \
