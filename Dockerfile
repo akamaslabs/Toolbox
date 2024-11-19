@@ -1,4 +1,17 @@
-FROM ubuntu:22.04
+ARG BASE_TAG=22.04
+FROM ubuntu:${BASE_TAG}
+ARG BASE_TAG
+
+LABEL maintainer="Akamas S.p.A." \
+      name="akamas/toolbox" \
+      vendor="Akamas S.p.A." \
+      org.opencontainers.image.authors="Akamas S.p.A." \
+      org.opencontainers.image.base.name="ubuntu:${BASE_TAG}" \
+      org.opencontainers.image.documentation="https://docs.akamas.io" \
+      org.opencontainers.image.ref.name="akamas/toolbox" \
+      org.opencontainers.image.title="Akamas Toolbox" \
+      org.opencontainers.image.url="https://akamas.io" \
+      org.opencontainers.image.vendor="Akamas S.p.A."
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
@@ -62,10 +75,10 @@ ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8
 
-ARG JAVA_VERSION=17.0.11+9      # link releases: https://adoptium.net/temurin/archive/?version=17
-ARG YQ_VERSION=4.44.2           # link releases: https://github.com/mikefarah/yq/releases
-ARG KUBECLT_VERSION=1.29.6      # link releases: https://kubernetes.io/releases/
-ARG K9S_VERSION=0.32.5          # link releases: https://github.com/derailed/k9s/releases
+ARG JAVA_VERSION=17.0.13+11     # link releases: https://adoptium.net/temurin/archive/?version=17
+ARG YQ_VERSION=4.44.3           # link releases: https://github.com/mikefarah/yq/releases
+ARG KUBECLT_VERSION=1.29.10     # link releases: https://kubernetes.io/releases/
+ARG K9S_VERSION=0.32.7          # link releases: https://github.com/derailed/k9s/releases
 
 ARG AKAMASCLI_VERSION=2.9.0
 

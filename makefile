@@ -52,7 +52,14 @@ push:   login-ecr		## Push docker image
 build: 			## Build docker image
 	@echo "Building docker image" && \
 	env && \
-	docker build --pull -t ${IMAGE_NAME}:${VERSION} --build-arg DOCKER_GROUP_ID=$(DOCKER_GROUP_ID) .
+	docker build --pull \
+		--label "build-date=$$(date -u +'%FT%TZ')" \
+		--label "revision=$(CI_COMMIT_SHA)" \
+		--label "version=${VERSION}" \
+		--label "org.opencontainers.image.created=$$(date -u +'%FT%TZ')" \
+		--label "org.opencontainers.image.revision=$(CI_COMMIT_SHA)" \
+		--label "org.opencontainers.image.version=$(VERSION)" \
+		-t ${IMAGE_NAME}:${VERSION} --build-arg DOCKER_GROUP_ID=$(DOCKER_GROUP_ID) .
 
 .PHONY: build-docker-compose-yml
 build-docker-compose-yml:    					## Build e2e/docker-compose.yml
