@@ -51,7 +51,6 @@ push:   login-ecr		## Push docker image
 .PHONY: build
 build: 			## Build docker image
 	@echo "Building docker image" && \
-	env && \
 	docker build --pull \
 		--label "build-date=$$(date -u +'%FT%TZ')" \
 		--label "revision=$(CI_COMMIT_SHA)" \
