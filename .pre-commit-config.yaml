@@ -2,7 +2,7 @@
 # See https://pre-commit.com/hooks.html for more hooks
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+    rev: v6.0.0
     hooks:
       - id: check-added-large-files
       # - id: check-ast
@@ -25,11 +25,11 @@ repos:
     rev: v0.0.18
     hooks:
     - id: shellcheck
-      args: ["-e", "SC2181"]
+      args: [-e, SC2181]
     # - id: shfmt
 
   ### Docker
   - repo: https://github.com/hadolint/hadolint
-    rev: v2.12.0
+    rev: v2.14.0
     hooks:
     - id: hadolint-docker

@@ -1,10 +1,22 @@
-FROM ubuntu:22.04
+ARG BASE_TAG=24.04
+FROM ubuntu:${BASE_TAG}
+ARG BASE_TAG
+
+LABEL maintainer="Akamas S.p.A." \
+      name="akamas/toolbox" \
+      vendor="Akamas S.p.A." \
+      org.opencontainers.image.authors="Akamas S.p.A." \
+      org.opencontainers.image.base.name="ubuntu:${BASE_TAG}" \
+      org.opencontainers.image.documentation="https://docs.akamas.io" \
+      org.opencontainers.image.ref.name="akamas/toolbox" \
+      org.opencontainers.image.title="Akamas Toolbox" \
+      org.opencontainers.image.url="https://akamas.io" \
+      org.opencontainers.image.vendor="Akamas S.p.A."
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 ENV BUILD_USER_ID=199
 ENV BUILD_USER=akamas
-ARG DOCKER_GROUP_ID=200
 
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
@@ -24,12 +36,12 @@ RUN apt-get update && \
     locales \
     lsb-release \
     net-tools \
-    netcat \
     openssh-client \
     openssh-server \
     postgresql-client \
     python3 \
     python3-pip \
+    pipx \
     software-properties-common \
     sshpass \
     sudo \
@@ -54,27 +66,26 @@ RUN apt-get update && \
         docker-compose-plugin && \
     apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/*
 
-RUN groupdel docker && groupadd -g ${DOCKER_GROUP_ID} docker
-RUN useradd -l --user-group --create-home --shell /bin/bash -u ${BUILD_USER_ID} -G sudo,docker ${BUILD_USER} && newgrp docker
+RUN useradd -l --user-group --create-home --shell /bin/bash -u ${BUILD_USER_ID} -G sudo,docker ${BUILD_USER}
 
 RUN locale-gen en_US.UTF-8
-ENV LANG en_US.UTF-8
-ENV LANGUAGE en_US:en
-ENV LC_ALL en_US.UTF-8
+ENV LANG=en_US.UTF-8
+ENV LANGUAGE=en_US:en
+ENV LC_ALL=en_US.UTF-8
 
-ARG JAVA_VERSION=17.0.11+9      # link releases: https://adoptium.net/temurin/archive/?version=17
-ARG YQ_VERSION=4.44.2           # link releases: https://github.com/mikefarah/yq/releases
-ARG KUBECLT_VERSION=1.29.6      # link releases: https://kubernetes.io/releases/
-ARG K9S_VERSION=0.32.5          # link releases: https://github.com/derailed/k9s/releases
+ARG JAVA_VERSION=17.0.18+8      # link releases: https://adoptium.net/temurin/releases/?os=any&arch=any&version=17
+ARG YQ_VERSION=4.49.2           # link releases: https://github.com/mikefarah/yq/releases
+ARG KUBECLT_VERSION=1.34.3      # link releases: https://kubernetes.io/releases/
+ARG K9S_VERSION=0.50.18         # link releases: https://github.com/derailed/k9s/releases
 
 ARG AKAMASCLI_VERSION=2.9.0
 
+ARG AKAMASCLI_VERSION=3.0.1
 RUN wget -q "https://github.com/adoptium/temurin17-binaries/releases/download/jdk-${JAVA_VERSION/+/%2B}/OpenJDK17U-jdk_x64_linux_hotspot_${JAVA_VERSION/+/_}.tar.gz" -O /opt/OpenJDK.tar.gz && \
     tar xzf /opt/OpenJDK.tar.gz -C /opt/ && rm /opt/OpenJDK.tar.gz && \
     mv "/opt/jdk-${JAVA_VERSION}" "/opt/jdk-${JAVA_VERSION/+/_}/" && ln -s "/opt/jdk-${JAVA_VERSION/+/_}/" /opt/java
 
-RUN pip3 install --progress-bar off --no-cache-dir --upgrade pip && \
-    pip3 install --progress-bar off --no-cache-dir setuptools wheel kubernetes
+RUN pip3 install --break-system-packages --no-cache-dir kubernetes
 
 RUN wget -q "https://github.com/mikefarah/yq/releases/download/v${YQ_VERSION}/yq_linux_amd64" && \
     mv yq_linux_amd64 /usr/bin/yq && \

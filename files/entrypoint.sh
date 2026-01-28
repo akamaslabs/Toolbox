@@ -56,6 +56,27 @@ update_password () {
   fi
 }
 
+adjust_docker_gid () {
+  # Adjust docker group GID to match the mounted socket's GID
+  # This allows the container to work on any host regardless of its docker GID
+  if [ -S /var/run/docker.sock ]; then
+    SOCKET_GID=$(stat -c '%g' /var/run/docker.sock)
+    CURRENT_GID=$(getent group docker | cut -d: -f3)
+    if [ "$SOCKET_GID" != "$CURRENT_GID" ]; then
+      # Check if another group already uses the target GID.
+      # Safe to delete: these are typically system groups (e.g., systemd-journal)
+      # that aren't needed in this container's context.
+      CONFLICTING_GROUP=$(getent group "$SOCKET_GID" | cut -d: -f1)
+      if [ -n "$CONFLICTING_GROUP" ]; then
+        echo "Removing conflicting group '$CONFLICTING_GROUP' that uses GID $SOCKET_GID"
+        echo "$PASS" | sudo -S groupdel "$CONFLICTING_GROUP"
+      fi
+      echo "Adjusting docker group GID from $CURRENT_GID to $SOCKET_GID"
+      echo "$PASS" | sudo -S groupmod -g "$SOCKET_GID" docker
+    fi
+  fi
+}
+
 #########################
 # Main
 #########################
@@ -111,6 +132,7 @@ if echo "$PASS" | sudo -S -v ; then
   echo 'Updating work folder permissions'
   echo "$PASS" | sudo -S chown "$USER:$USER" "${WORK_FLD}"
   [ -d "${WORK_FLD}/.kube" ] && echo "$PASS" | sudo -S chown "$USER:$USER" "${WORK_FLD}/.kube"
+  adjust_docker_gid
 else
   echo WARNING: cannot run as privileged user
 fi
