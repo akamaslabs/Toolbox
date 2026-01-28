@@ -1,9 +1,6 @@
 .DEFAULT_GOAL := help
 SHELL := /bin/bash
 
-# Build environment variables used in the docker image building process
-DOCKER_GROUP_ID ?= $(shell getent group | grep docker | cut -d: -f3)
-
 branch := $(shell git rev-parse --abbrev-ref HEAD)
 version := $(shell cat version)
 repo_location := $(strip $(shell  git rev-parse --show-toplevel))
@@ -39,7 +36,6 @@ ci:	check-target 			## Run target inside Docker. E.g.: make ci target=build
 	--env AWS_ACCESS_KEY_ID=$(AWS_ACCESS_KEY_ID) \
 	--env AWS_SECRET_ACCESS_KEY=$(AWS_SECRET_ACCESS_KEY) \
 	--env AWS_DEFAULT_REGION=$(AWS_DEFAULT_REGION) \
-	--env DOCKER_GROUP_ID=$(DOCKER_GROUP_ID) \
 	--env ENV_NAME=$(ENV_NAME) \
 	--env CI_PIPELINE_ID=$(CI_PIPELINE_ID) \
 	registry.gitlab.com/akamas/devops/build-base/build-base:1.8.6 /bin/sh -c "make $(target)"
@@ -58,7 +54,7 @@ build: 			## Build docker image
 		--label "org.opencontainers.image.created=$$(date -u +'%FT%TZ')" \
 		--label "org.opencontainers.image.revision=$(CI_COMMIT_SHA)" \
 		--label "org.opencontainers.image.version=$(VERSION)" \
-		-t ${IMAGE_NAME}:${VERSION} --build-arg DOCKER_GROUP_ID=$(DOCKER_GROUP_ID) .
+		-t ${IMAGE_NAME}:${VERSION} .
 
 .PHONY: build-docker-compose-yml
 build-docker-compose-yml:    					## Build e2e/docker-compose.yml
@@ -82,5 +78,4 @@ build-values:
 info: 					## Print some info on the repo
 	@echo "this_version: $(version)" && \
 	echo "this_branch: $(branch)" && \
-	echo "repo_location: $(repo_location)" && \
-	echo "DOCKER_GROUP_ID: $(DOCKER_GROUP_ID)"
+	echo "repo_location: $(repo_location)"
