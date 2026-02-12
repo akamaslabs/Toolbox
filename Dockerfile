@@ -74,11 +74,9 @@ ENV LANGUAGE=en_US:en
 ENV LC_ALL=en_US.UTF-8
 
 ARG JAVA_VERSION=17.0.18+8      # link releases: https://adoptium.net/temurin/releases/?os=any&arch=any&version=17
-ARG YQ_VERSION=4.49.2           # link releases: https://github.com/mikefarah/yq/releases
-ARG KUBECLT_VERSION=1.34.3      # link releases: https://kubernetes.io/releases/
+ARG YQ_VERSION=4.52.2           # link releases: https://github.com/mikefarah/yq/releases
+ARG KUBECTL_VERSION=1.34.4      # link releases: https://kubernetes.io/releases/
 ARG K9S_VERSION=0.50.18         # link releases: https://github.com/derailed/k9s/releases
-
-ARG AKAMASCLI_VERSION=2.9.0
 
 ARG AKAMASCLI_VERSION=3.0.1
 RUN wget -q "https://github.com/adoptium/temurin17-binaries/releases/download/jdk-${JAVA_VERSION/+/%2B}/OpenJDK17U-jdk_x64_linux_hotspot_${JAVA_VERSION/+/_}.tar.gz" -O /opt/OpenJDK.tar.gz && \
@@ -93,7 +91,7 @@ RUN wget -q "https://github.com/mikefarah/yq/releases/download/v${YQ_VERSION}/yq
 
 RUN curl -sS https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 
-RUN curl -sS -LO "https://dl.k8s.io/release/v${KUBECLT_VERSION}/bin/linux/amd64/kubectl" && install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+RUN curl -sS -LO "https://dl.k8s.io/release/v${KUBECTL_VERSION}/bin/linux/amd64/kubectl" && install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
 
 RUN wget -q "https://github.com/derailed/k9s/releases/download/v${K9S_VERSION}/k9s_Linux_amd64.tar.gz" && \
     tar xfz k9s_Linux_amd64.tar.gz -C /usr/local/bin/ && rm -f k9s_Linux_amd64.tar.gz && \
