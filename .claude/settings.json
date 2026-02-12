@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:adoptium.net)",
+      "WebFetch(domain:api.adoptium.net)",
+      "WebFetch(domain:dl.k8s.io)",
+      "WebFetch(domain:endoflife.date)",
+      "WebFetch(domain:raw.githubusercontent.com)"
+    ]
+  }
+}
