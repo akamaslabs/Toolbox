@@ -6,6 +6,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Toolbox is a Docker image providing a collection of essential DevOps tools (vim, jq, yq, kubectl, helm, k9s, aws-cli, docker-cli, akamas-cli, openssh, openjdk 17) that serves as an execution environment for Airflow tasks within the Akamas ecosystem.
 
+## Image Philosophy
+
+- **Prioritize security and stability** in all image content decisions.
+- Keep tools and base image updated to avoid known bugs and vulnerabilities.
+- Avoid unstable or bleeding-edge versions — prefer proven, stable releases.
+- Use Ubuntu LTS as the base image (e.g., 24.04 LTS).
+- When upgrading packages or tools, prefer the latest stable/LTS release over the absolute newest version.
+
 ## Build Commands
 
 ```bash

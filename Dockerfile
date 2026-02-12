@@ -74,8 +74,8 @@ ENV LANGUAGE=en_US:en
 ENV LC_ALL=en_US.UTF-8
 
 ARG JAVA_VERSION=17.0.18+8      # link releases: https://adoptium.net/temurin/releases/?os=any&arch=any&version=17
-ARG YQ_VERSION=4.49.2           # link releases: https://github.com/mikefarah/yq/releases
-ARG KUBECLT_VERSION=1.34.3      # link releases: https://kubernetes.io/releases/
+ARG YQ_VERSION=4.52.2           # link releases: https://github.com/mikefarah/yq/releases
+ARG KUBECLT_VERSION=1.34.4      # link releases: https://kubernetes.io/releases/
 ARG K9S_VERSION=0.50.18         # link releases: https://github.com/derailed/k9s/releases
 
 ARG AKAMASCLI_VERSION=2.9.0
